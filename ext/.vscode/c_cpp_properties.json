@@ -5,8 +5,11 @@
             "includePath": [
                 "${workspaceFolder}/**",
                 "/usr/src/php",
+                "/usr/src/php/TSRM",
                 "/usr/src/php/Zend",
-                "/usr/src/php/main"
+                "/usr/src/php/ext",
+                "/usr/src/php/main",
+                "/usr/src/php/sapi"
             ],
             "defines": [],
             "compilerPath": "/usr/bin/gcc",
