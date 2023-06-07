@@ -12,13 +12,14 @@ ENV PSKEL_SKIP_DEBUG=${PSKEL_SKIP_DEBUG}
 RUN if test -f "/etc/debian_version"; then \
       apt-get update && \
       DEBIAN_FRONTEND="noninteractive" apt-get install -y \
-        "build-essential" "bison" "valgrind" "llvm" "clang" && \
+        "build-essential" "bison" "valgrind" "llvm" "clang" "zlib1g-dev" "libsqlite3-dev" && \
       if test "${PSKEL_SKIP_DEBUG}" = ""; then \
         docker-php-source extract && \
         cd "/usr/src/php" && \
           CFLAGS="-fpic -fpie -DZEND_TRACK_ARENA_ALLOC" LDFLAGS="-pie" ./configure --disable-all \
-              --disable-cgi --disable-fpm --disable-phpdbg --enable-cli \
               --includedir="/usr/local/include/gcc-debug-php" --program-prefix="gcc-debug-" \
+              --disable-cgi --disable-fpm --disable-phpdbg --enable-cli \
+              --enable-mysqlnd --enable-pdo --with-pdo-mysql --with-pdo-sqlite \
               --enable-debug --without-pcre-jit "$(php -r "echo PHP_ZTS === 1 ? '--enable-zts' : '';")" \
               --with-valgrind \
               --enable-option-checking=fatal && \
@@ -31,6 +32,7 @@ RUN if test -f "/etc/debian_version"; then \
           CC=clang CXX=clang++ CFLAGS="-fpic -fpie -DZEND_TRACK_ARENA_ALLOC" LDFLAGS="-pie" ./configure \
               --includedir="/usr/local/include/clang-debug-php" --program-prefix="clang-debug-" \
               --disable-cgi --disable-all --disable-fpm --disable-phpdbg --enable-cli \
+              --enable-mysqlnd --enable-pdo --with-pdo-mysql --with-pdo-sqlite \
               --enable-debug --without-pcre-jit "$(php -r "echo PHP_ZTS === 1 ? '--enable-zts' : '';")" \
               --enable-memory-sanitizer \
               --enable-option-checking=fatal && \
@@ -40,13 +42,14 @@ RUN if test -f "/etc/debian_version"; then \
         docker-php-source delete; \
       fi; \
     elif test -f "/etc/alpine-release"; then \
-        apk add --no-cache ${PHPIZE_DEPS} "bison" "valgrind" "valgrind-dev" && \
+        apk add --no-cache ${PHPIZE_DEPS} "bison" "valgrind" "valgrind-dev" "zlib-dev" "sqlite3-dev" && \
         if test "${PSKEL_SKIP_DEBUG}" = ""; then \
           docker-php-source extract && \
           cd "/usr/src/php" && \
               CFLAGS="-fpic -fpie -DZEND_TRACK_ARENA_ALLOC" LDFLAGS="-pie" ./configure --disable-all \
                   --includedir="/usr/local/include/gcc-debug-php" --program-prefix="gcc-debug-" \
                   --disable-cgi --disable-fpm --disable-phpdbg --enable-cli \
+                  --enable-mysqlnd --enable-pdo --with-pdo-mysql --with-pdo-sqlite \
                   --enable-debug --without-pcre-jit "$(php -r "echo PHP_ZTS === 1 ? '--enable-zts' : '';")" \
                   --with-valgrind \
                   --enable-option-checking=fatal && \
