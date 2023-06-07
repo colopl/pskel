@@ -42,7 +42,7 @@ RUN if test -f "/etc/debian_version"; then \
         docker-php-source delete; \
       fi; \
     elif test -f "/etc/alpine-release"; then \
-        apk add --no-cache ${PHPIZE_DEPS} "bison" "valgrind" "valgrind-dev" "zlib-dev" "sqlite3-dev" && \
+        apk add --no-cache ${PHPIZE_DEPS} "bison" "valgrind" "valgrind-dev" "zlib-dev" "sqlite-dev" && \
         if test "${PSKEL_SKIP_DEBUG}" = ""; then \
           docker-php-source extract && \
           cd "/usr/src/php" && \
