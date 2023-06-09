@@ -4,12 +4,13 @@
             "name": "Linux",
             "includePath": [
                 "${workspaceFolder}/**",
-                "/usr/src/php",
-                "/usr/src/php/TSRM",
-                "/usr/src/php/Zend",
-                "/usr/src/php/ext",
-                "/usr/src/php/main",
-                "/usr/src/php/sapi"
+                "/usr/local/include/php",
+                "/usr/local/include/php/TSRM",
+                "/usr/local/include/php/Zend",
+                "/usr/local/include/php/ext",
+                "/usr/local/include/php/include",
+                "/usr/local/include/php/main",
+                "/usr/local/include/php/sapi"
             ],
             "defines": [],
             "compilerPath": "/usr/bin/gcc",
