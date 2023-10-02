@@ -63,8 +63,6 @@ RUN if test -f "/etc/debian_version"; then \
 
 WORKDIR "/usr/src/php"
 
-COPY ./ci.sh /usr/bin/ci
-
-ENTRYPOINT ["/usr/bin/ci"]
-
 COPY ./ext /ext
+
+COPY ./ci.sh /usr/bin/ci
