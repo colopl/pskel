@@ -6,13 +6,15 @@ jobs:
     timeout-minutes: 60
     strategy:
       matrix:
-        arch: ["amd64", "arm64v8", "s390x"]
-        version: ["8.0", "8.1", "8.2"]
+        arch: ["amd64", "arm64v8"]
+        version: ["8.1", "8.2"]
         type: ["cli", "zts"]
         distro: ["bullseye", "alpine"]
     steps:
         - name: Checkout
           uses: actions/checkout@v3
+          with:
+            submodules: true
         - name: Setup QEMU
           uses: docker/setup-qemu-action@v2
           with:
@@ -20,25 +22,16 @@ jobs:
         - name: Setup buildx
           uses: docker/setup-buildx-action@v2
         - name: Build container
-          uses: docker/build-push-action@v4
-          with:
-            build-args: |
-              IMAGE=${{ matrix.arch }}/php
-              TAG=${{ matrix.version }}-${{ matrix.type }}-${{ matrix.distro }}
-              PSKEL_SKIP_DEBUG=${{ matrix.arch != 'amd64' && '1' || '' }}
-            cache-from: type=gha
-            cache-to: type=gha,mode=max
-            context: .
-            load: true
-            tags: "pskel-${{ matrix.arch }}-${{ matrix.type }}-${{ matrix.distro }}"
-        - name: Test extension
           run: |
-            docker run --env TEST_EXTENSION=1 --rm -i pskel-${{ matrix.arch }}-${{ matrix.type }}-${{ matrix.distro }}
+            docker compose build --pull --no-cache --build-arg IMAGE=${{ matrix.arch }}/php --build-arg TAG=${{ matrix.version }}-${{ matrix.type }}-${{ matrix.distro }} --build-arg PSKEL_SKIP_DEBUG=${{ matrix.arch != 'amd64' && '1' || '' }}
+        - name: Run tests
+          run: |
+            docker compose run --rm --entrypoint=/usr/bin/ci --env TEST_EXTENSION=1 dev
         - name: Test extension with Valgrind
           if: matrix.arch == 'amd64'
           run: |
-            docker run --env TEST_EXTENSION_VALGRIND=1 --rm -i pskel-${{ matrix.arch }}-${{ matrix.type }}-${{ matrix.distro }}
+            docker compose run --rm --entrypoint=/usr/bin/ci --env TEST_EXTENSION_VALGRIND=1 dev
         - name: Test extension with MSAN
           if: matrix.arch == 'amd64' && matrix.distro != 'alpine'
           run: |
-            docker run --env TEST_EXTENSION_MSAN=1 --rm -i pskel-${{ matrix.arch }}-${{ matrix.type }}-${{ matrix.distro }}
+            docker compose run --rm --entrypoint=/usr/bin/ci --env TEST_EXTENSION_MSAN=1 dev

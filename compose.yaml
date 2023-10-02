@@ -1,0 +1,29 @@
+version: '3.4'
+
+services:
+  dev:
+    build:
+      context: ./
+      dockerfile: ./Dockerfile
+    cap_add:
+      - SYS_PTRACE
+    security_opt:
+      - seccomp:unconfined
+    privileged: true
+    volumes:
+      - ./ext:/usr/src/php/ext/extension:cached
+    tty: true
+    depends_on:
+      - mysql
+    command: ["sleep", "infinity"]
+  mysql:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: testing
+      MYSQL_DATABASE: testing
+      MYSQL_USER: testing
+      MYSQL_PASSWORD: testing
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./docker/mysql/etc/mysql/conf.d/my.cnf:/etc/mysql/conf.d/my.cnf

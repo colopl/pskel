@@ -1,4 +1,6 @@
-#!/bin/sh -ex
+#!/bin/sh -e
+
+echo "[Pskel CI] BEGIN TEST"
 
 if test "${TEST_EXTENSION}" != ""; then
   cd "/ext"
@@ -29,10 +31,13 @@ if test "${TEST_EXTENSION_MSAN}" != ""; then
     clang-debug-phpize
     CC=clang CXX=clang++ CFLAGS="-fsanitize=memory -DZEND_TRACK_ARENA_ALLOC" LDFLAGS="-fsanitize=memory" ./configure --with-php-config=$(which clang-debug-php-config)
     make clean
-    make -j$(nproc)
+    CFLAGS="-fsanitize=memory -DZEND_TRACK_ARENA_ALLOC" LDFLAGS="-fsanitize=memory" make -j$(nproc)
     TEST_PHP_ARGS="--show-diff -q --msan" make test
   else
     echo "missing clang-debug-php"
     exit 1
   fi
 fi
+
+echo "[Pskel CI] END TEST"
+exit 0
