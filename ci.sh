@@ -41,9 +41,9 @@ if test "${TEST_EXTENSION_MSAN}" != ""; then
   if type "clang-debug-php" > /dev/null 2>&1; then
     cd "/ext"
     clang-debug-phpize
-    CC=clang CXX=clang++ CFLAGS="-fsanitize=memory -DZEND_TRACK_ARENA_ALLOC" LDFLAGS="-fsanitize=memory" ./configure --with-php-config="$(which clang-debug-php-config)"
+    CC="clang" CXX="clang++" CFLAGS="-fsanitize=memory -DZEND_TRACK_ARENA_ALLOC" CPPFLAGS="-fsanitize=memory -DZEND_TRACK_ARENA_ALLOC ${CPPFLAGS}" LDFLAGS="-fsanitize=memory" ./configure --with-php-config="$(which clang-debug-php-config)"
     make clean
-    CFLAGS="-fsanitize=memory -DZEND_TRACK_ARENA_ALLOC" LDFLAGS="-fsanitize=memory" make -j"$(nproc)"
+    CFLAGS="-fsanitize=memory -DZEND_TRACK_ARENA_ALLOC ${CFLAGS}" CPPFLAGS="-fsanitize=memory -DZEND_TRACK_ARENA_ALLOC ${CPPFLAGS}" LDFLAGS="-fsanitize=memory" make -j"$(nproc)"
     TEST_PHP_ARGS="--show-diff -q --msan" make test
   else
     echo "[Pskel CI] missing clang-debug-php"
