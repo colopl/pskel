@@ -1,5 +1,5 @@
 ARG IMAGE=php
-ARG TAG=8.2-cli
+ARG TAG=8.3-cli
 
 FROM ${IMAGE}:${TAG}
 
@@ -32,12 +32,40 @@ RUN if test -f "/etc/debian_version"; then \
         docker-php-source delete && \
         docker-php-source extract && \
         cd "/usr/src/php" && \
-          CC=clang CXX=clang++ CFLAGS="-fpic -fpie -DZEND_TRACK_ARENA_ALLOC" LDFLAGS="-pie" ./configure \
-              --includedir="/usr/local/include/clang-sanitizer-php" --program-prefix="clang-sanitizer-" \
+          CC=clang CXX=clang++ CFLAGS="-fsanitize=memory -fno-sanitize-recover -DZEND_TRACK_ARENA_ALLOC" LDFLAGS="-fsanitize=memory" ./configure \
+              --includedir="/usr/local/include/clang-msan-php" --program-prefix="clang-msan-" \
               --disable-cgi --disable-all --disable-fpm --enable-cli \
               --enable-mysqlnd --enable-pdo --with-pdo-mysql --with-pdo-sqlite \
               --enable-debug --without-pcre-jit "$(php -r "echo PHP_ZTS === 1 ? '--enable-zts' : '';")" \
               --enable-memory-sanitizer \
+              ${PSKEL_EXTRA_CONFIGURE_OPTIONS} \
+              --enable-option-checking=fatal && \
+          make -j$(nproc) && \
+          make install && \
+        cd - && \
+        docker-php-source delete && \
+        docker-php-source extract && \
+        cd "/usr/src/php" && \
+          CC=clang CXX=clang++ CFLAGS="-fsanitize=address -fno-sanitize-recover -DZEND_TRACK_ARENA_ALLOC" LDFLAGS="-fsanitize=address" ./configure \
+              --includedir="/usr/local/include/clang-asan-php" --program-prefix="clang-asan-" \
+              --disable-cgi --disable-all --disable-fpm --enable-cli \
+              --enable-mysqlnd --enable-pdo --with-pdo-mysql --with-pdo-sqlite \
+              --enable-debug --without-pcre-jit "$(php -r "echo PHP_ZTS === 1 ? '--enable-zts' : '';")" \
+              --enable-address-sanitizer \
+              ${PSKEL_EXTRA_CONFIGURE_OPTIONS} \
+              --enable-option-checking=fatal && \
+          make -j$(nproc) && \
+          make install && \
+        cd - && \
+        docker-php-source delete && \
+        docker-php-source extract && \
+        cd "/usr/src/php" && \
+          CC=clang CXX=clang++ CFLAGS="-fsanitize=undefined -fno-sanitize-recover -DZEND_TRACK_ARENA_ALLOC" LDFLAGS="-fsanitize=undefined" ./configure \
+              --includedir="/usr/local/include/clang-ubsan-php" --program-prefix="clang-ubsan-" \
+              --disable-cgi --disable-all --disable-fpm --enable-cli \
+              --enable-mysqlnd --enable-pdo --with-pdo-mysql --with-pdo-sqlite \
+              --enable-debug --without-pcre-jit "$(php -r "echo PHP_ZTS === 1 ? '--enable-zts' : '';")" \
+              --enable-undefined-sanitizer \
               ${PSKEL_EXTRA_CONFIGURE_OPTIONS} \
               --enable-option-checking=fatal && \
           make -j$(nproc) && \

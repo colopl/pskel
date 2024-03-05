@@ -9,7 +9,7 @@ jobs:
         arch: ["amd64", "arm64v8", "s390x"]
         version: ["8.1", "8.2", "8.3"]
         type: ["cli", "zts"]
-        distro: ["bullseye", "alpine"]
+        distro: ["bookworm", "alpine"]
     steps:
         - name: Checkout
           uses: actions/checkout@v4
@@ -35,7 +35,15 @@ jobs:
           if: matrix.arch == 'amd64'
           run: |
             docker compose run --rm --entrypoint=/usr/bin/ci --env TEST_EXTENSION_VALGRIND=1 dev
-        - name: Test extension with MSAN
+        - name: Test extension with LLVM Sanitizer (MemorySanitizer)
           if: matrix.arch == 'amd64' && matrix.distro != 'alpine'
           run: |
             docker compose run --rm --entrypoint=/usr/bin/ci --env TEST_EXTENSION_MSAN=1 dev
+        - name: Test extension with LLVM Sanitizer (AddressSanitizer)
+          if: matrix.arch == 'amd64' && matrix.distro != 'alpine'
+          run: |
+            docker compose run --rm --entrypoint=/usr/bin/ci --env TEST_EXTENSION_ASAN=1 dev
+        - name: Test extension with LLVM Sanitizer (UndefinedBehaviorSanitizer)
+          if: matrix.arch == 'amd64' && matrix.distro != 'alpine'
+          run: |
+            docker compose run --rm --entrypoint=/usr/bin/ci --env TEST_EXTENSION_UBSAN=1 dev
