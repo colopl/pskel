@@ -23,7 +23,9 @@ They each have the following binary prefixes. The build toolchains are the same.
 
 - `debug-php`
 - `gcc-valgrind-php`
-- `clang-sanitizer-php`
+- `clang-msan-php`
+- `clang-asan-php`
+- `clang-ubsan-php`
 
 For example, the method to test the extension using GCC + Valgrind is as follows:
 
