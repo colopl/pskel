@@ -21,14 +21,15 @@ A debug build of PHP is included in advance. Debug builds using GCC and Clang ar
 
 They each have the following binary prefixes. The build toolchains are the same.
 
-- `gcc-debug-php`
-- `clang-debug-php`
+- `debug-php`
+- `gcc-valgrind-php`
+- `clang-sanitizer-php`
 
 For example, the method to test the extension using GCC + Valgrind is as follows:
 
 ```
-# gcc-debug-phpize
-# ./configure --with-php-config=$(which gcc-debug-php-config)
+# gcc-valgrind-phpize
+# ./configure --with-php-config=$(which gcc-valgrind-php-config)
 # TEST_PHP_ARGS="-q -m --show-diff" make -j$(nproc) test
 ```
 
@@ -37,7 +38,7 @@ For example, the method to test the extension using GCC + Valgrind is as follows
 Yes. Build using the debug version of PHP and run as follows:
 
 ```
-# gdb --args gcc-debug-php -dextension=./modules/your_extension_name.so example.php
+# gdb --args gcc-valgrind-php -dextension=./modules/your_extension_name.so example.php
 ```
 
 #### Can I develop using something other than Visual Studio Code?
