@@ -21,7 +21,5 @@ services:
       MYSQL_DATABASE: testing
       MYSQL_USER: testing
       MYSQL_PASSWORD: testing
-    ports:
-      - "3306:3306"
     volumes:
       - ./docker/mysql/etc/mysql/conf.d/my.cnf:/etc/mysql/conf.d/my.cnf
