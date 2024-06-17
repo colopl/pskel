@@ -17,6 +17,7 @@ config.sub
 configure
 configure.ac
 configure.in
+configure~
 include
 install-sh
 libtool
