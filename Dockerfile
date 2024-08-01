@@ -14,7 +14,7 @@ ENV PSKEL_EXTRA_CONFIGURE_OPTIONS=${PSKEL_EXTRA_CONFIGURE_OPTIONS}
 RUN if test -f "/etc/debian_version"; then \
       apt-get update && \
       DEBIAN_FRONTEND="noninteractive" apt-get install -y \
-        "build-essential" "bison" "valgrind" "llvm" "clang" "zlib1g-dev" "libsqlite3-dev" && \
+        "build-essential" "bison" "valgrind" "llvm" "clang" "zlib1g-dev" "libsqlite3-dev" "git" && \
       if test "${PSKEL_SKIP_DEBUG}" = ""; then \
         docker-php-source extract && \
         cd "/usr/src/php" && \
@@ -87,7 +87,7 @@ RUN if test -f "/etc/debian_version"; then \
         docker-php-source delete; \
       fi; \
     elif test -f "/etc/alpine-release"; then \
-        apk add --no-cache ${PHPIZE_DEPS} "bison" "valgrind" "valgrind-dev" "zlib-dev" "sqlite-dev" && \
+        apk add --no-cache ${PHPIZE_DEPS} "bison" "valgrind" "valgrind-dev" "zlib-dev" "sqlite-dev" "git" && \
         if test "${PSKEL_SKIP_DEBUG}" = ""; then \
           docker-php-source extract && \
           cd "/usr/src/php" && \
@@ -119,8 +119,7 @@ RUN if test -f "/etc/debian_version"; then \
         fi; \
     fi && \
     docker-php-source extract && \
-    ln -s "/usr/src/php/build/gen_stub.php" "/usr/local/bin/gen_stub.php" && \
-    apt-get update && apt-get install -y "git"
+    ln -s "/usr/src/php/build/gen_stub.php" "/usr/local/bin/gen_stub.php"
 
 WORKDIR "/usr/src/php"
 
