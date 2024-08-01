@@ -1,9 +1,45 @@
 name: CI
 on: [push, pull_request]
 jobs:
-  CI:
+  Windows:
+    runs-on: windows-2022
+    defaults:
+      run:
+        shell: cmd
+    strategy:
+      matrix:
+        arch: ["x64"]
+        version: ["8.1", "8.2", "8.3"]
+        ts: ["nts", "ts"]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup PHP
+        id: setup-php
+        uses: php/setup-php-sdk@v0.8
+        with:
+          arch: ${{ matrix.arch }}
+          version: ${{ matrix.version }}
+          ts: ${{ matrix.ts }}
+      - name: Enable developer command prompt
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: ${{ matrix.arch }}
+          toolset: ${{ steps.setup-php.outputs.toolset }}
+      - name: phpize
+        working-directory: ext
+        run: phpize
+      - name: configure
+        working-directory: ext
+        run: configure --enable-skeleton --with-prefix=${{ steps.setup-php.outputs.prefix }}
+      - name: make
+        working-directory: ext
+        run: nmake
+      - name: test
+        working-directory: ext
+        run: nmake test TESTS="--show-diff tests"
+  Linux:
     runs-on: ubuntu-22.04
-    timeout-minutes: 60
     strategy:
       matrix:
         arch: ["amd64", "arm64v8", "s390x"]
@@ -13,8 +49,6 @@ jobs:
     steps:
         - name: Checkout
           uses: actions/checkout@v4
-          with:
-            submodules: true
         - name: Setup QEMU
           uses: docker/setup-qemu-action@v3
           with:
