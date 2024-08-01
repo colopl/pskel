@@ -1,0 +1,8 @@
+{
+    "files.associations": {
+        "*.phpt": "php",
+        "skeleton_arginfo.h": "c",
+        "php_skeleton.h": "c",
+        "php.h": "c"
+    }
+}
