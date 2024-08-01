@@ -11,5 +11,5 @@
 	},
 	"dockerComposeFile": "../compose.yaml",
 	"service": "dev",
-	"workspaceFolder": "/usr/src/php/ext/extension"
+	"workspaceFolder": "/work"
 }

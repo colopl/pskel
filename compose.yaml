@@ -9,7 +9,8 @@ services:
       - seccomp:unconfined
     privileged: true
     volumes:
-      - ./ext:/usr/src/php/ext/extension:cached
+      - ./ext:/usr/src/php/ext/extension
+      - ./:/work
     tty: true
     depends_on:
       - mysql

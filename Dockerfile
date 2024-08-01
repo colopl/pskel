@@ -118,7 +118,9 @@ RUN if test -f "/etc/debian_version"; then \
           docker-php-source delete; \
         fi; \
     fi && \
-    docker-php-source extract
+    docker-php-source extract && \
+    ln -s "/usr/src/php/build/gen_stub.php" "/usr/local/bin/gen_stub.php" && \
+    apt-get update && apt-get install -y "git"
 
 WORKDIR "/usr/src/php"
 
