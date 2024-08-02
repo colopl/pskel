@@ -123,6 +123,7 @@ RUN if test -f "/etc/debian_version"; then \
 
 WORKDIR "/usr/src/php"
 
-COPY ./ext /ext
+COPY ./pskel_test.sh /usr/bin/pskel_test
+COPY ./pskel_init_extension.sh /usr/bin/pskel_init_extension
 
-COPY ./ci.sh /usr/bin/ci
+COPY ./ext /ext

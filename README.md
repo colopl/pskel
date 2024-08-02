@@ -5,9 +5,10 @@ A skeleton project for quickly setting up an environment to develop extensions f
 ### How to use
 
 1. Install [Visual Studio Code](https://code.visualstudio.com/) and Docker Desktop (or an alternative engine).
-2. Install the [Remote Container](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers) extension in VSCode.
-3. Open the directory and open it with the `Remote Container` extension.
-4. (Optional) Replace the word "skeleton" in each file appropriately.
+1. Install the [Remote Container](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers) extension in VSCode.
+1. Open the directory and open it with the `Remote Container` extension.
+1. Run `pskel_init_extension` command.
+2. Run `pskel_test` command for testing.
 
 ### Q&A
 

@@ -1,7 +1,0 @@
-ARG_ENABLE('skeleton', 'skeleton support', 'no');
-
-if (PHP_SKELETON != 'no') {
-	AC_DEFINE('HAVE_SKELETON', 1, 'skeleton support enabled');
-
-	EXTENSION('skeleton', 'skeleton.c', null, '/DZEND_ENABLE_STATIC_TSRMLS_CACHE=1');
-}

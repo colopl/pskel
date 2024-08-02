@@ -8,10 +8,16 @@ case "${1}" in
   "msan") TEST_EXTENSION_MSAN=1;;
   "asan") TEST_EXTENSION_ASAN=1;;
   "ubsan") TEST_EXTENSION_UBSAN=1;;
-  *) printf "Pskel CI\nusage:\n\t\t%s\t\t: %s\n\t\t%s\t\t: %s\n\t\t%s\t: %s\n\t\t%s\t\t: %s\n\t\t%s\t\t: %s\n\t\t%s\t\t: %s\n" "test" "Test extension with pre-installed PHP binary. [bin: $(which "php")]" "debug" "Test extension with Debug Build (GCC) binary. [bin: $(which "debug-php")]" "valgrind" "Test extension with GCC binary with Valgrind. [bin: $(which "gcc-valgrind-php")]" "msan" "Test extension with Clang binary with MemorySanitizer. [bin: $(which "clang-msan-php")]" "asan" "Test extension with Clang binary with AddressSanitizer. [bin: $(which "clang-asan-php")]" "ubsan" "Test extension with Clang binary with UndefinedBehaviorSanitizer. [bin: $(which "clang-ubsan-php")]"; exit 0;;
+  *) printf "Pskel Test\nUsage:\n\t\t%s\t\t: %s\n\t\t%s\t\t: %s\n\t\t%s\t: %s\n\t\t%s\t\t: %s\n\t\t%s\t\t: %s\n\t\t%s\t\t: %s\n" "test" "Test extension with pre-installed PHP binary. [bin: $(which "php")]" "debug" "Test extension with Debug Build (GCC) binary. [bin: $(which "debug-php")]" "valgrind" "Test extension with GCC binary with Valgrind. [bin: $(which "gcc-valgrind-php")]" "msan" "Test extension with Clang binary with MemorySanitizer. [bin: $(which "clang-msan-php")]" "asan" "Test extension with Clang binary with AddressSanitizer. [bin: $(which "clang-asan-php")]" "ubsan" "Test extension with Clang binary with UndefinedBehaviorSanitizer. [bin: $(which "clang-ubsan-php")]"; exit 0;;
 esac
 
-echo "[Pskel CI] BEGIN TEST"
+if test -f "/ext/.gitkeep" && test $(cat "/ext/.gitkeep") = "pskel_uninitialized"; then
+  echo "[Pskel Test] Uninitialized project detected, initialize default skeleton"
+  rm -rf "/ext"
+  /usr/local/bin/php "/usr/src/php/ext/ext_skel.php" --ext "ext" --dir "/"
+fi
+
+echo "[Pskel Test] BEGIN TEST"
 
 if test "${TEST_EXTENSION}" != ""; then
   cd "/ext"
@@ -21,7 +27,7 @@ if test "${TEST_EXTENSION}" != ""; then
   make -j"$(nproc)"
   TEST_PHP_ARGS="--show-diff -q" make test
 else
-  echo "[Pskel CI] skip: TEST_EXTENSION is not set"
+  echo "[Pskel Test] skip: TEST_EXTENSION is not set"
 fi
 
 if test "${TEST_EXTENSION_DEBUG}" != ""; then
@@ -32,7 +38,7 @@ if test "${TEST_EXTENSION_DEBUG}" != ""; then
   make -j"$(nproc)"
   TEST_PHP_ARGS="--show-diff -q" make test
 else
-  echo "[Pskel CI] skip: TEST_EXTENSION_DEBUG is not set"
+  echo "[Pskel Test] skip: TEST_EXTENSION_DEBUG is not set"
 fi
 
 if test "${TEST_EXTENSION_VALGRIND}" != ""; then
@@ -44,11 +50,11 @@ if test "${TEST_EXTENSION_VALGRIND}" != ""; then
     make -j"$(nproc)"
     TEST_PHP_ARGS="--show-diff -q -m" make test
   else
-    echo "[Pskel CI] missing gcc-valgrind-php"
+    echo "[Pskel Test] missing gcc-valgrind-php"
     exit 1
   fi
 else
-  echo "[Pskel CI] skip: TEST_EXTENSION_VALGRIND is not set"
+  echo "[Pskel Test] skip: TEST_EXTENSION_VALGRIND is not set"
 fi
 
 if test "${TEST_EXTENSION_MSAN}" != ""; then
@@ -60,11 +66,11 @@ if test "${TEST_EXTENSION_MSAN}" != ""; then
     CFLAGS="-fsanitize=memory -DZEND_TRACK_ARENA_ALLOC ${CFLAGS}" CPPFLAGS="-fsanitize=memory -DZEND_TRACK_ARENA_ALLOC ${CPPFLAGS}" LDFLAGS="-fsanitize=memory" make -j"$(nproc)"
     TEST_PHP_ARGS="--show-diff -q --msan" make test
   else
-    echo "[Pskel CI] missing clang-msan-php"
+    echo "[Pskel Test] missing clang-msan-php"
     exit 1
   fi
 else
-  echo "[Pskel CI] skip: TEST_EXTENSION_MSAN is not set"
+  echo "[Pskel Test] skip: TEST_EXTENSION_MSAN is not set"
 fi
 
 if test "${TEST_EXTENSION_ASAN}" != ""; then
@@ -76,11 +82,11 @@ if test "${TEST_EXTENSION_ASAN}" != ""; then
     CFLAGS="-fsanitize=address -DZEND_TRACK_ARENA_ALLOC ${CFLAGS}" CPPFLAGS="-fsanitize=address -DZEND_TRACK_ARENA_ALLOC ${CPPFLAGS}" LDFLAGS="-fsanitize=address" make -j"$(nproc)"
     TEST_PHP_ARGS="--show-diff -q --asan" make test
   else
-    echo "[Pskel CI] missing clang-asan-php"
+    echo "[Pskel Test] missing clang-asan-php"
     exit 1
   fi
 else
-  echo "[Pskel CI] skip: TEST_EXTENSION_ASAN is not set"
+  echo "[Pskel Test] skip: TEST_EXTENSION_ASAN is not set"
 fi
 
 if test "${TEST_EXTENSION_UBSAN}" != ""; then
@@ -92,12 +98,12 @@ if test "${TEST_EXTENSION_UBSAN}" != ""; then
     CFLAGS="-fsanitize=undefined -DZEND_TRACK_ARENA_ALLOC ${CFLAGS}" CPPFLAGS="-fsanitize=undefined -DZEND_TRACK_ARENA_ALLOC ${CPPFLAGS}" LDFLAGS="-fsanitize=undefined" make -j"$(nproc)"
     TEST_PHP_ARGS="--show-diff -q" make test
   else
-    echo "[Pskel CI] missing clang-ubsan-php"
+    echo "[Pskel Test] missing clang-ubsan-php"
     exit 1
   fi
 else
-  echo "[Pskel CI] skip: TEST_EXTENSION_UBSAN is not set"
+  echo "[Pskel Test] skip: TEST_EXTENSION_UBSAN is not set"
 fi
 
-echo "[Pskel CI] END TEST"
+echo "[Pskel Test] END TEST"
 exit 0
