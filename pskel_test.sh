@@ -17,10 +17,17 @@ if test -f "/ext/.gitkeep" && test $(cat "/ext/.gitkeep") = "pskel_uninitialized
   /usr/local/bin/php "/usr/src/php/ext/ext_skel.php" --ext "ext" --dir "/"
 fi
 
+PSKEL_WORKDIR="/ext"
+
+if test -d "/work/ext"; then
+  echo "[Pskel Test] DevContainer workspace detected, use \"/work/ext\"."
+  PSKEL_WORKDIR="/work/ext"
+fi
+
 echo "[Pskel Test] BEGIN TEST"
 
 if test "${TEST_EXTENSION}" != ""; then
-  cd "/ext"
+  cd "${PSKEL_WORKDIR}"
   phpize
   ./configure --with-php-config="$(which php-config)"
   make clean
@@ -31,7 +38,7 @@ else
 fi
 
 if test "${TEST_EXTENSION_DEBUG}" != ""; then
-  cd "/ext"
+  cd "${PSKEL_WORKDIR}"
   debug-phpize
   ./configure --with-php-config="$(which debug-php-config)"
   make clean
@@ -43,7 +50,7 @@ fi
 
 if test "${TEST_EXTENSION_VALGRIND}" != ""; then
   if type "gcc-valgrind-php" > /dev/null 2>&1; then
-    cd "/ext"
+    cd "${PSKEL_WORKDIR}"
     gcc-valgrind-phpize
     ./configure --with-php-config="$(which gcc-valgrind-php-config)"
     make clean
@@ -59,7 +66,7 @@ fi
 
 if test "${TEST_EXTENSION_MSAN}" != ""; then
   if type "clang-msan-php" > /dev/null 2>&1; then
-    cd "/ext"
+    cd "${PSKEL_WORKDIR}"
     clang-msan-phpize
     CC="clang" CXX="clang++" CFLAGS="-fsanitize=memory -DZEND_TRACK_ARENA_ALLOC" CPPFLAGS="-fsanitize=memory -DZEND_TRACK_ARENA_ALLOC ${CPPFLAGS}" LDFLAGS="-fsanitize=memory" ./configure --with-php-config="$(which clang-msan-php-config)"
     make clean
@@ -75,7 +82,7 @@ fi
 
 if test "${TEST_EXTENSION_ASAN}" != ""; then
   if type "clang-asan-php" > /dev/null 2>&1; then
-    cd "/ext"
+    cd "${PSKEL_WORKDIR}"
     clang-asan-phpize
     CC="clang" CXX="clang++" CFLAGS="-fsanitize=address -DZEND_TRACK_ARENA_ALLOC" CPPFLAGS="-fsanitize=address -DZEND_TRACK_ARENA_ALLOC ${CPPFLAGS}" LDFLAGS="-fsanitize=address" ./configure --with-php-config="$(which clang-asan-php-config)"
     make clean
@@ -91,7 +98,7 @@ fi
 
 if test "${TEST_EXTENSION_UBSAN}" != ""; then
   if type "clang-ubsan-php" > /dev/null 2>&1; then
-    cd "/ext"
+    cd "${PSKEL_WORKDIR}"
     clang-ubsan-phpize
     CC="clang" CXX="clang++" CFLAGS="-fsanitize=undefined -DZEND_TRACK_ARENA_ALLOC" CPPFLAGS="-fsanitize=undefined -DZEND_TRACK_ARENA_ALLOC ${CPPFLAGS}" LDFLAGS="-fsanitize=undefined" ./configure --with-php-config="$(which clang-ubsan-php-config)"
     make clean
