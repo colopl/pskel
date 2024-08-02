@@ -8,8 +8,6 @@ services:
     security_opt:
       - seccomp:unconfined
     privileged: true
-    volumes:
-      - ./:/work
     tty: true
     command: ["sleep", "infinity"]
     # depends_on:

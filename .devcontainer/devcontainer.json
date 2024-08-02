@@ -11,5 +11,12 @@
 	},
 	"dockerComposeFile": "../compose.yaml",
 	"service": "dev",
+	"mounts": [
+		{
+			"type": "bind",
+			"source": "./",
+			"target": "/work"
+		}
+	],
 	"workspaceFolder": "/work"
 }
