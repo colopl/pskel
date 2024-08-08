@@ -1,6 +1,12 @@
 {
     "files.associations": {
-        "*.phpt": "php"
+        "*.phpt": "php",
+		"*.c": "c",
+		"*.h": "c",
+		"*.cpp": "cpp",
+		"*.hpp": "cpp",
+		"*.cc": "cpp",
+		"*.cxx": "cpp"
     },
     "editor.tabSize": 4,
     "editor.insertSpaces": false,

@@ -1,22 +1,15 @@
 {
-	"name": "pskel",
+	"name": "pskel (for Codespaces)",
 	"customizations": {
-		"vscode": {
-			"extensions": [
-				"ms-vscode.cpptools",
-				"ms-vscode.cpptools-extension-pack",
-				"maelvalais.autoconf"
-			]
-		}
+	  "vscode": {
+		"extensions": [
+		  "ms-vscode.cpptools",
+		  "ms-vscode.cpptools-extension-pack",
+		  "maelvalais.autoconf",
+		  "ms-azuretools.vscode-docker"
+		]
+	  }
 	},
-	"dockerComposeFile": "../compose.yaml",
-	"service": "dev",
-	"mounts": [
-		{
-			"type": "bind",
-			"source": "./",
-			"target": "/work"
-		}
-	],
-	"workspaceFolder": "/work"
-}
+	"dockerComposeFile": "./../compose.yaml",
+	"service": "dev"
+  }
