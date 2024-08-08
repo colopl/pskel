@@ -1,15 +1,15 @@
 {
 	"name": "pskel (for Codespaces)",
 	"customizations": {
-	  "vscode": {
-		"extensions": [
-		  "ms-vscode.cpptools",
-		  "ms-vscode.cpptools-extension-pack",
-		  "maelvalais.autoconf",
-		  "ms-azuretools.vscode-docker"
-		]
-	  }
+		"vscode": {
+			"extensions": [
+				"ms-vscode.cpptools",
+				"ms-vscode.cpptools-extension-pack",
+				"maelvalais.autoconf",
+				"ms-azuretools.vscode-docker"
+			]
+		}
 	},
 	"dockerComposeFile": "./../compose.yaml",
 	"service": "dev"
-  }
+}
