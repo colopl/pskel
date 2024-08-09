@@ -14,9 +14,8 @@ ENV PSKEL_EXTRA_CONFIGURE_OPTIONS=${PSKEL_EXTRA_CONFIGURE_OPTIONS}
 RUN if test -f "/etc/debian_version"; then \
       apt-get update && \
       DEBIAN_FRONTEND="noninteractive" apt-get install -y \
-        "build-essential" "bison" "zlib1g-dev" "libsqlite3-dev" "git" && \
+        "build-essential" "bison" "valgrind" "llvm" "clang" "zlib1g-dev" "libsqlite3-dev" "git" && \
       if test "${PSKEL_SKIP_DEBUG}" = ""; then \
-	    DEBIAN_FRONTEND="noninteractive" apt-get install -y "valgrind" && \
         docker-php-source extract && \
         cd "/usr/src/php" && \
           CFLAGS="-fpic -fpie -DZEND_TRACK_ARENA_ALLOC" LDFLAGS="-pie" ./configure --disable-all \
@@ -25,6 +24,48 @@ RUN if test -f "/etc/debian_version"; then \
               --enable-mysqlnd --enable-pdo --with-pdo-mysql --with-pdo-sqlite \
               --enable-debug --without-pcre-jit "$(php -r "echo PHP_ZTS === 1 ? '--enable-zts' : '';")" \
               --with-valgrind \
+              ${PSKEL_EXTRA_CONFIGURE_OPTIONS} \
+              --enable-option-checking=fatal && \
+          make -j$(nproc) && \
+          make install && \
+        cd - && \
+        docker-php-source delete && \
+        docker-php-source extract && \
+        cd "/usr/src/php" && \
+          CC=clang CXX=clang++ CFLAGS="-fsanitize=memory -fno-sanitize-recover -DZEND_TRACK_ARENA_ALLOC" LDFLAGS="-fsanitize=memory" ./configure \
+              --includedir="/usr/local/include/clang-msan-php" --program-prefix="clang-msan-" \
+              --disable-cgi --disable-all --disable-fpm --enable-cli \
+              --enable-mysqlnd --enable-pdo --with-pdo-mysql --with-pdo-sqlite \
+              --enable-debug --without-pcre-jit "$(php -r "echo PHP_ZTS === 1 ? '--enable-zts' : '';")" \
+              --enable-memory-sanitizer \
+              ${PSKEL_EXTRA_CONFIGURE_OPTIONS} \
+              --enable-option-checking=fatal && \
+          make -j$(nproc) && \
+          make install && \
+        cd - && \
+        docker-php-source delete && \
+        docker-php-source extract && \
+        cd "/usr/src/php" && \
+          CC=clang CXX=clang++ CFLAGS="-fsanitize=address -fno-sanitize-recover -DZEND_TRACK_ARENA_ALLOC" LDFLAGS="-fsanitize=address" ./configure \
+              --includedir="/usr/local/include/clang-asan-php" --program-prefix="clang-asan-" \
+              --disable-cgi --disable-all --disable-fpm --enable-cli \
+              --enable-mysqlnd --enable-pdo --with-pdo-mysql --with-pdo-sqlite \
+              --enable-debug --without-pcre-jit "$(php -r "echo PHP_ZTS === 1 ? '--enable-zts' : '';")" \
+              --enable-address-sanitizer \
+              ${PSKEL_EXTRA_CONFIGURE_OPTIONS} \
+              --enable-option-checking=fatal && \
+          make -j$(nproc) && \
+          make install && \
+        cd - && \
+        docker-php-source delete && \
+        docker-php-source extract && \
+        cd "/usr/src/php" && \
+          CC=clang CXX=clang++ CFLAGS="-fsanitize=undefined -fno-sanitize-recover -DZEND_TRACK_ARENA_ALLOC" LDFLAGS="-fsanitize=undefined" ./configure \
+              --includedir="/usr/local/include/clang-ubsan-php" --program-prefix="clang-ubsan-" \
+              --disable-cgi --disable-all --disable-fpm --enable-cli \
+              --enable-mysqlnd --enable-pdo --with-pdo-mysql --with-pdo-sqlite \
+              --enable-debug --without-pcre-jit "$(php -r "echo PHP_ZTS === 1 ? '--enable-zts' : '';")" \
+              --enable-undefined-sanitizer \
               ${PSKEL_EXTRA_CONFIGURE_OPTIONS} \
               --enable-option-checking=fatal && \
           make -j$(nproc) && \
@@ -43,56 +84,11 @@ RUN if test -f "/etc/debian_version"; then \
           make -j$(nproc) && \
           make install && \
         cd - && \
-        docker-php-source delete && \
-		DEBIAN_FRONTEND="noninteractive" apt-get install -y "bash" "wget" "lsb-release" "software-properties-common" "gnupg" && \
-		/bin/bash -c "$(wget -O - https://apt.llvm.org/llvm.sh)" && \
-        docker-php-source extract && \
-        cd "/usr/src/php" && \
-          CC=clang-18 CXX=clang++-18 CFLAGS="-fsanitize=memory -fno-sanitize-recover -DZEND_TRACK_ARENA_ALLOC" LDFLAGS="-fsanitize=memory" ./configure \
-              --includedir="/usr/local/include/clang-msan-php" --program-prefix="clang-msan-" \
-              --disable-cgi --disable-all --disable-fpm --enable-cli \
-              --enable-mysqlnd --enable-pdo --with-pdo-mysql --with-pdo-sqlite \
-              --enable-debug --without-pcre-jit "$(php -r "echo PHP_ZTS === 1 ? '--enable-zts' : '';")" \
-              --enable-memory-sanitizer \
-              ${PSKEL_EXTRA_CONFIGURE_OPTIONS} \
-              --enable-option-checking=fatal && \
-          make -j$(nproc) && \
-          make install && \
-        cd - && \
-        docker-php-source delete && \
-        docker-php-source extract && \
-        cd "/usr/src/php" && \
-          CC=clang-18 CXX=clang++-18 CFLAGS="-fsanitize=address -fno-sanitize-recover -DZEND_TRACK_ARENA_ALLOC" LDFLAGS="-fsanitize=address" ./configure \
-              --includedir="/usr/local/include/clang-asan-php" --program-prefix="clang-asan-" \
-              --disable-cgi --disable-all --disable-fpm --enable-cli \
-              --enable-mysqlnd --enable-pdo --with-pdo-mysql --with-pdo-sqlite \
-              --enable-debug --without-pcre-jit "$(php -r "echo PHP_ZTS === 1 ? '--enable-zts' : '';")" \
-              --enable-address-sanitizer \
-              ${PSKEL_EXTRA_CONFIGURE_OPTIONS} \
-              --enable-option-checking=fatal && \
-          make -j$(nproc) && \
-          make install && \
-        cd - && \
-        docker-php-source delete && \
-        docker-php-source extract && \
-        cd "/usr/src/php" && \
-          CC=clang-18 CXX=clang++-18 CFLAGS="-fsanitize=undefined -fno-sanitize-recover -DZEND_TRACK_ARENA_ALLOC" LDFLAGS="-fsanitize=undefined" ./configure \
-              --includedir="/usr/local/include/clang-ubsan-php" --program-prefix="clang-ubsan-" \
-              --disable-cgi --disable-all --disable-fpm --enable-cli \
-              --enable-mysqlnd --enable-pdo --with-pdo-mysql --with-pdo-sqlite \
-              --enable-debug --without-pcre-jit "$(php -r "echo PHP_ZTS === 1 ? '--enable-zts' : '';")" \
-              --enable-undefined-sanitizer \
-              ${PSKEL_EXTRA_CONFIGURE_OPTIONS} \
-              --enable-option-checking=fatal && \
-          make -j$(nproc) && \
-          make install && \
-        cd - && \
         docker-php-source delete; \
       fi; \
     elif test -f "/etc/alpine-release"; then \
-        apk add --no-cache ${PHPIZE_DEPS} "bison" "zlib-dev" "sqlite-dev" "git" && \
+        apk add --no-cache ${PHPIZE_DEPS} "bison" "valgrind" "valgrind-dev" "zlib-dev" "sqlite-dev" "git" && \
         if test "${PSKEL_SKIP_DEBUG}" = ""; then \
-		  apk add --no-cache "valgrind" "valgrind-dev" \
           docker-php-source extract && \
           cd "/usr/src/php" && \
               CFLAGS="-fpic -fpie -DZEND_TRACK_ARENA_ALLOC" LDFLAGS="-pie" ./configure --disable-all \
