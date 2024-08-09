@@ -6,7 +6,8 @@
         "ms-vscode.cpptools",
         "ms-vscode.cpptools-extension-pack",
         "maelvalais.autoconf",
-        "ms-azuretools.vscode-docker"
+        "ms-azuretools.vscode-docker",
+		"editorconfig.editorconfig"
       ]
     }
   },
