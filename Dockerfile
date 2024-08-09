@@ -18,7 +18,7 @@ RUN if test -f "/etc/debian_version"; then \
       if test "${PSKEL_SKIP_DEBUG}" = ""; then \
         docker-php-source extract && \
         cd "/usr/src/php" && \
-          CFLAGS="-std=c99 -fpic -fpie -DZEND_TRACK_ARENA_ALLOC" LDFLAGS="-pie" ./configure --disable-all \
+          CFLAGS="-fpic -fpie -DZEND_TRACK_ARENA_ALLOC" LDFLAGS="-pie" ./configure --disable-all \
               --includedir="/usr/local/include/gcc-valgrind-php" --program-prefix="gcc-valgrind-" \
               --disable-cgi --disable-fpm --enable-cli \
               --enable-mysqlnd --enable-pdo --with-pdo-mysql --with-pdo-sqlite \
@@ -32,7 +32,7 @@ RUN if test -f "/etc/debian_version"; then \
         docker-php-source delete && \
         docker-php-source extract && \
         cd "/usr/src/php" && \
-          CC=clang CXX=clang++ CFLAGS="-std=c99 -fsanitize=memory -fno-sanitize-recover -DZEND_TRACK_ARENA_ALLOC" LDFLAGS="-fsanitize=memory" ./configure \
+          CC=clang CXX=clang++ CFLAGS="-fsanitize=memory -fno-sanitize-recover -DZEND_TRACK_ARENA_ALLOC" LDFLAGS="-fsanitize=memory" ./configure \
               --includedir="/usr/local/include/clang-msan-php" --program-prefix="clang-msan-" \
               --disable-cgi --disable-all --disable-fpm --enable-cli \
               --enable-mysqlnd --enable-pdo --with-pdo-mysql --with-pdo-sqlite \
@@ -46,7 +46,7 @@ RUN if test -f "/etc/debian_version"; then \
         docker-php-source delete && \
         docker-php-source extract && \
         cd "/usr/src/php" && \
-          CC=clang CXX=clang++ CFLAGS="-std=c99 -fsanitize=address -fno-sanitize-recover -DZEND_TRACK_ARENA_ALLOC" LDFLAGS="-fsanitize=address" ./configure \
+          CC=clang CXX=clang++ CFLAGS="-fsanitize=address -fno-sanitize-recover -DZEND_TRACK_ARENA_ALLOC" LDFLAGS="-fsanitize=address" ./configure \
               --includedir="/usr/local/include/clang-asan-php" --program-prefix="clang-asan-" \
               --disable-cgi --disable-all --disable-fpm --enable-cli \
               --enable-mysqlnd --enable-pdo --with-pdo-mysql --with-pdo-sqlite \
@@ -60,7 +60,7 @@ RUN if test -f "/etc/debian_version"; then \
         docker-php-source delete && \
         docker-php-source extract && \
         cd "/usr/src/php" && \
-          CC=clang CXX=clang++ CFLAGS="-std=c99 -fsanitize=undefined -fno-sanitize-recover -DZEND_TRACK_ARENA_ALLOC" LDFLAGS="-fsanitize=undefined" ./configure \
+          CC=clang CXX=clang++ CFLAGS="-fsanitize=undefined -fno-sanitize-recover -DZEND_TRACK_ARENA_ALLOC" LDFLAGS="-fsanitize=undefined" ./configure \
               --includedir="/usr/local/include/clang-ubsan-php" --program-prefix="clang-ubsan-" \
               --disable-cgi --disable-all --disable-fpm --enable-cli \
               --enable-mysqlnd --enable-pdo --with-pdo-mysql --with-pdo-sqlite \
@@ -74,7 +74,7 @@ RUN if test -f "/etc/debian_version"; then \
         docker-php-source delete && \
         docker-php-source extract && \
         cd "/usr/src/php" && \
-          CFLAGS="-std=c99 -fpic -fpie -DZEND_TRACK_ARENA_ALLOC" LDFLAGS="-pie" ./configure --disable-all \
+          CFLAGS="-fpic -fpie -DZEND_TRACK_ARENA_ALLOC" LDFLAGS="-pie" ./configure --disable-all \
               --includedir="/usr/local/include/debug-php" --program-prefix="debug-" \
               --disable-cgi --disable-fpm --enable-cli \
               --enable-mysqlnd --enable-pdo --with-pdo-mysql --with-pdo-sqlite \
@@ -91,7 +91,7 @@ RUN if test -f "/etc/debian_version"; then \
         if test "${PSKEL_SKIP_DEBUG}" = ""; then \
           docker-php-source extract && \
           cd "/usr/src/php" && \
-              CFLAGS="-std=c99 -fpic -fpie -DZEND_TRACK_ARENA_ALLOC" LDFLAGS="-pie" ./configure --disable-all \
+              CFLAGS="-fpic -fpie -DZEND_TRACK_ARENA_ALLOC" LDFLAGS="-pie" ./configure --disable-all \
                   --includedir="/usr/local/include/gcc-valgrind-php" --program-prefix="gcc-valgrind-" \
                   --disable-cgi --disable-fpm --enable-cli \
                   --enable-mysqlnd --enable-pdo --with-pdo-mysql --with-pdo-sqlite \
@@ -105,7 +105,7 @@ RUN if test -f "/etc/debian_version"; then \
           docker-php-source delete && \
           docker-php-source extract && \
           cd "/usr/src/php" && \
-              CFLAGS="-std=c99 -fpic -fpie -DZEND_TRACK_ARENA_ALLOC" LDFLAGS="-pie" ./configure --disable-all \
+              CFLAGS="-fpic -fpie -DZEND_TRACK_ARENA_ALLOC" LDFLAGS="-pie" ./configure --disable-all \
                   --includedir="/usr/local/include/debug-php" --program-prefix="debug-" \
                   --disable-cgi --disable-fpm --enable-cli \
                   --enable-mysqlnd --enable-pdo --with-pdo-mysql --with-pdo-sqlite \
