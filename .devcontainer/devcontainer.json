@@ -11,5 +11,6 @@
 			]
 		}
 	},
-	"dockerComposeFile": "./../compose.yaml"
+	"dockerComposeFile": "./../compose.yaml",
+	"service": "shell"
 }
