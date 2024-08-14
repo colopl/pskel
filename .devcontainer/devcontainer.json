@@ -11,5 +11,5 @@
 			]
 		}
 	},
-	"dockerComposeFile": "./../compose.yaml",
+	"dockerComposeFile": "./../compose.yaml"
 }
