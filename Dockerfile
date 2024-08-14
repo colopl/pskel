@@ -1,4 +1,4 @@
-ARG PLATFORM=linux/amd64
+ARG PLATFORM=${BUILDPLATFORM:-linux/amd64}
 ARG IMAGE=php
 ARG TAG=8.3-cli-bookworm
 
