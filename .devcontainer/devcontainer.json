@@ -12,5 +12,4 @@
 		}
 	},
 	"dockerComposeFile": "./../compose.yaml",
-	"service": "dev"
 }

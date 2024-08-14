@@ -20,30 +20,30 @@ jobs:
           uses: docker/setup-buildx-action@v3
         - name: Build container
           run: |
-            docker compose build --pull --no-cache --build-arg IMAGE=${{ matrix.arch }}/php --build-arg TAG=${{ matrix.version }}-${{ matrix.type }}-${{ matrix.distro }} --build-arg PSKEL_SKIP_DEBUG=${{ matrix.arch != 'amd64' && '1' || '' }}		  
+            docker compose build --pull --no-cache --build-arg IMAGE=${{ matrix.arch }}/php --build-arg TAG=${{ matrix.version }}-${{ matrix.type }}-${{ matrix.distro }} --build-arg PSKEL_SKIP_BUILD=${{ matrix.arch != 'amd64' && '1' || '' }}
         - name: Run tests
           run: |
-            docker compose run --rm --entrypoint=/usr/bin/pskel_test --env TEST_EXTENSION=1 dev
+            docker compose run --rm shell test php
         - name: Test extension with PHP Debug Build
           if: matrix.arch == 'amd64'
           run: |
-            docker compose run --rm --entrypoint=/usr/bin/pskel_test --env TEST_EXTENSION_DEBUG=1 dev
+            docker compose run --rm shell test debug-php
         - name: Test extension with Valgrind
           if: matrix.arch == 'amd64'
           run: |
-            docker compose run --rm --entrypoint=/usr/bin/pskel_test --env TEST_EXTENSION_VALGRIND=1 dev
+            docker compose run --rm --env TEST_PHP_ARGS="-m" shell test gcc-valgrind-php
         - name: Test extension with LLVM Sanitizer (MemorySanitizer)
           if: matrix.arch == 'amd64' && matrix.distro != 'alpine'
           run: |
-            docker compose run --rm --entrypoint=/usr/bin/pskel_test --env TEST_EXTENSION_MSAN=1 dev
+            docker compose run --rm --env TEST_PHP_ARGS="--msan" --env CC="/usr/bin/clang" --env CXX="/usr/bin/clang++" --env CFLAGS="-fsanitize=memory -DZEND_TRACK_ARENA_ALLOC" --env CPPFLAGS="-fsanitize=memory -DZEND_TRACK_ARENA_ALLOC" shell test clang-msan-php
         - name: Test extension with LLVM Sanitizer (AddressSanitizer)
           if: matrix.arch == 'amd64' && matrix.distro != 'alpine'
           run: |
-            docker compose run --rm --entrypoint=/usr/bin/pskel_test --env TEST_EXTENSION_ASAN=1 dev
+            docker compose run --rm --env TEST_PHP_ARGS="--asan" --env CC="/usr/bin/clang" --env CXX="/usr/bin/clang++" --env CFLAGS="-fsanitize=address -DZEND_TRACK_ARENA_ALLOC" --env CPPFLAGS="-fsanitize=address -DZEND_TRACK_ARENA_ALLOC" shell test clang-asan-php
         - name: Test extension with LLVM Sanitizer (UndefinedBehaviorSanitizer)
           if: matrix.arch == 'amd64' && matrix.distro != 'alpine'
           run: |
-            docker compose run --rm --entrypoint=/usr/bin/pskel_test --env TEST_EXTENSION_UBSAN=1 dev
+            docker compose run --rm --env CC="/usr/bin/clang" --env CXX="/usr/bin/clang++" --env CFLAGS="-fsanitize=undefined -DZEND_TRACK_ARENA_ALLOC" --env CPPFLAGS="-fsanitize=undefined -DZEND_TRACK_ARENA_ALLOC" shell test clang-ubsan-php
   # Windows:
   #   runs-on: windows-2022
   #   defaults:
@@ -74,7 +74,7 @@ jobs:
   #       run: phpize
   #     - name: configure
   #       working-directory: ext
-  #       run: configure --enable-skeleton --with-prefix=${{ steps.setup-php.outputs.prefix }}
+  #       run: configure --enable-SKELETON_NAME --with-prefix=${{ steps.setup-php.outputs.prefix }}
   #     - name: make
   #       working-directory: ext
   #       run: nmake

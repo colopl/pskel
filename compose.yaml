@@ -1,5 +1,5 @@
 services:
-  dev:
+  shell:
     build:
       context: ./
       dockerfile: ./Dockerfile
@@ -9,7 +9,6 @@ services:
       - seccomp:unconfined
     privileged: true
     tty: true
-    command: ["sleep", "infinity"]
     # depends_on:
     #   - mysql
   # mysql:

@@ -7,8 +7,8 @@ A skeleton project for quickly setting up an environment to develop extensions f
 1. Install [Visual Studio Code](https://code.visualstudio.com/) and Docker Desktop (or an alternative engine).
 1. Install the [Remote Container](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers) extension in VSCode.
 1. Open the directory and open it with the `Remote Container` extension.
-1. Run `pskel_init_extension` command.
-2. Run `pskel_test` command for testing.
+1. Run `pskel init <extension_name>` .
+2. Run `pskel test <testing php binary name>` command for testing.
 
 ### Q&A
 
