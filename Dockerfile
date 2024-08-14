@@ -19,7 +19,7 @@ RUN export CFLAGS="-fPIE -DZEND_TRACK_ARENA_ALLOC" \
       apk add --no-cache "bison" "zlib-dev" "sqlite-dev" "libxml2-dev" \
         "autoconf" "pkgconfig" "make" "gcc" "valgrind" "valgrind-dev" \
         "musl-dev" "git"; \
-    fi; \
+    fi;
 #  && if test "x${PSKEL_SKIP_BUILD}" = "x"; then \
 #       if test -f "/etc/debian_version"; then \
 #         CC="$(which "clang")" CXX="$(which "clang++")" CONFIGURE_OPTS="${BASE_OPTS} --enable-memory-sanitizer" pskel build "clang-msan" \
@@ -28,7 +28,7 @@ RUN export CFLAGS="-fPIE -DZEND_TRACK_ARENA_ALLOC" \
 #       fi \
 #  &&   CC="$(which "gcc")" CXX="$(which "g+++")" CONFIGURE_OPTS="${BASE_OPTS}" pskel build "debug" \
 #  &&   CC="$(which "gcc")" CXX="$(which "g+++")" CONFIGURE_OPTS="${BASE_OPTS} --with-valgrind" pskel build "gcc-valgrind"; \
-	fi
+#	fi
 
 COPY ./ext /ext
 
