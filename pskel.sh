@@ -19,10 +19,6 @@ EOF
     return 0
   fi
 
-  if ! test -f "/usr/src/php/ext/ext_skel.php"; then
-      docker-php-source extract
-  fi
-
   PSKEL_EXT_DIR="/ext"
 
   if test -d "/workspace/pskel/ext"; then
@@ -85,16 +81,13 @@ EOF
     return 0
   fi
 
-  if test -d "/usr/src/php"; then
-    docker-php-source delete
-  fi
-
-  docker-php-source extract
   cd "/usr/src/php"
     ./buildconf --force
     ./configure --program-prefix="${1}-" --includedir="/usr/local/include/${1}-php" ${CONFIGURE_OPTS}
+    make clean
     make -j"$(nproc)"
     make install
+    make clean
   cd -
 }
 

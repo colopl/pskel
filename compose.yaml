@@ -5,7 +5,7 @@ services:
       dockerfile: ./Dockerfile
     entrypoint: /bin/sh
     cap_add:
-      - SYS_PTRACE
+      - SYS_ADMIN
     security_opt:
       - seccomp:unconfined
     privileged: true
