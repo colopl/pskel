@@ -43,10 +43,10 @@ EOF
   fi
 
   for BIN in "${1}" "${1}ize" "${1}-config"; do
-      if ! type "${1}" > /dev/null 2>&1; then
-        echo "Invalid argument: '${1}', executable file not found" >&2
-        exit 1
-      fi
+    if ! type "${1}" > /dev/null 2>&1; then
+      echo "Invalid argument: '${1}', executable file not found" >&2
+      exit 1
+    fi
   done
 
   PSKEL_EXT_DIR="/ext"
