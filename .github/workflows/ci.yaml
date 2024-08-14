@@ -5,7 +5,7 @@ jobs:
     runs-on: ubuntu-22.04
     strategy:
       matrix:
-       .platform: ["linux/amd64", "linux/arm64/v8", "linux/s390x"]
+        platform: ["linux/amd64", "linux/arm64/v8", "linux/s390x"]
         version: ["8.1", "8.2", "8.3"]
         type: ["cli", "zts"]
         distro: ["bookworm", "alpine"]
