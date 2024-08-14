@@ -3,6 +3,7 @@ services:
     build:
       context: ./
       dockerfile: ./Dockerfile
+    entrypoint: /bin/sh
     tty: true
     # depends_on:
     #   - mysql
