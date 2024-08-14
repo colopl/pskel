@@ -26,7 +26,7 @@ RUN export CFLAGS="-DZEND_TRACK_ARENA_ALLOC" \
  &&     CC="$(which "clang")" CXX="$(which "clang++")" CONFIGURE_OPTS="${BASE_OPTS} --enable-address-sanitizer" pskel build "clang-asan" \
  &&     CC="$(which "clang")" CXX="$(which "clang++")" CONFIGURE_OPTS="${BASE_OPTS} --enable-undefined-sanitizer" pskel build "clang-ubsan"; \
       fi; \
-      CC="$(which "gcc")" CXX="$(which "g+++")" CONFIGURE_OPTS="${BASE_OPTS}" pskel build "debug" \
+ &&   CC="$(which "gcc")" CXX="$(which "g+++")" CONFIGURE_OPTS="${BASE_OPTS}" pskel build "debug" \
  &&   CC="$(which "gcc")" CXX="$(which "g+++")" CONFIGURE_OPTS="${BASE_OPTS} --with-valgrind" pskel build "gcc-valgrind"; \
 	fi
 
