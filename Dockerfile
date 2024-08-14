@@ -10,7 +10,7 @@ FROM --platform=${PLATFORM} ubuntu:24.04
 
 COPY --from=php-source "/usr/src/php" "/usr/src/php"
 
-ARG PSKEL_SKIP_BUILD=""
+ARG PSKEL_NON_NATIVE=""
 
 COPY ./pskel.sh /usr/local/bin/pskel
 
@@ -23,7 +23,8 @@ RUN if test -f "/etc/debian_version"; then \
         "autoconf" "pkgconfig" "make" "gcc" "valgrind" "valgrind-dev" \
         "musl-dev" "git"; \
     fi \
- && if test "x${PSKEL_SKIP_BUILD}" = "x"; then \
+ && pskel build \
+ && if test "x${PSKEL_NON_NATIVE}" = "x"; then \
       export CFLAGS="-DZEND_TRACK_ARENA_ALLOC" \
  &&   export CPPFLAGS="${CFLAGS}" \
  &&   export BASE_OPTS="--enable-debug $(php -r "echo PHP_ZTS === 1 ? '--enable-zts' : '';") --enable-option-checking=fatal --disable-phpdbg --disable-cgi --disable-fpm --enable-cli --without-pcre-jit --disable-opcache-jit" \

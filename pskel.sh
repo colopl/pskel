@@ -71,7 +71,7 @@ EOF
 }
 
 cmd_build() {
-  if test "${1}" = "-h" || test "${1}" = "--help" || test "${#}" -lt 1; then
+  if test "${1}" = "-h" || test "${1}" = "--help"; then
     cat << EOF
 Usage: ${0} build [php_binary_prefix]
 env:
@@ -81,9 +81,13 @@ EOF
     return 0
   fi
 
+  if ! test "x${1}" = "x"; then
+    CONFIGURE_OPTS="--program-prefix=\"${1}-\" --includedir=\"/usr/local/include/${1}-php\" ${CONFIGURE_OPTS}"
+  fi
+
   cd "/usr/src/php"
     ./buildconf --force
-    ./configure --program-prefix="${1}-" --includedir="/usr/local/include/${1}-php" ${CONFIGURE_OPTS}
+    ./configure ${CONFIGURE_OPTS}
     make clean
     make -j"$(nproc)"
     make install
