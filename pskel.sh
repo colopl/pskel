@@ -82,7 +82,7 @@ EOF
   fi
 
   if ! test "x${1}" = "x"; then
-    CONFIGURE_OPTS="--program-prefix=\"${1}-\" --includedir=\"/usr/local/include/${1}-php\" ${CONFIGURE_OPTS}"
+    CONFIGURE_OPTS="--program-prefix="${1}" --includedir="/usr/local/include/${1}-php" ${CONFIGURE_OPTS}"
   fi
 
   cd "/usr/src/php"

@@ -2,7 +2,7 @@ ARG PLATFORM=${BUILDPLATFORM:-linux/amd64}
 ARG IMAGE=php
 ARG TAG=8.3
 
-FROM php:${TAG} AS php-source
+FROM ${IMAGE}:${TAG} AS php-source
 
 RUN docker-php-source extract
 
