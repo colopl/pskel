@@ -4,7 +4,11 @@ services:
       context: ./
       dockerfile: ./Dockerfile
     entrypoint: /bin/sh
-    # tty: true
+    cap_add:
+      - SYS_PTRACE
+    security_opt:
+      - seccomp:unconfined
+    privileged: true
     # depends_on:
     #   - mysql
   # mysql:
