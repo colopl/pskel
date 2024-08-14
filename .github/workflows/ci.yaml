@@ -5,7 +5,7 @@ jobs:
     runs-on: ubuntu-22.04
     strategy:
       matrix:
-        arch: ["linux/amd64", "linux/arm64/v8", "linux/s390x"]
+       .platform: ["linux/amd64", "linux/arm64/v8", "linux/s390x"]
         version: ["8.1", "8.2", "8.3"]
         type: ["cli", "zts"]
         distro: ["bookworm", "alpine"]
@@ -20,28 +20,28 @@ jobs:
           uses: docker/setup-buildx-action@v3
         - name: Build container
           run: |
-            docker compose build --pull --no-cache --build-arg PLATFORM="${{ matrix.platform }}" --build-arg IMAGE="php" --build-arg TAG="${{ matrix.version }}-${{ matrix.type }}-${{ matrix.distro }}" --build-arg PSKEL_SKIP_BUILD="${{ matrix.arch != 'amd64' && '1' || '' }}"
+            docker compose build --pull --no-cache --build-arg PLATFORM="${{ matrix.platform }}" --build-arg IMAGE="php" --build-arg TAG="${{ matrix.version }}-${{ matrix.type }}-${{ matrix.distro }}" --build-arg PSKEL_SKIP_BUILD="${{ matrix.platform != 'linux/amd64' && '1' || '' }}"
         - name: Run tests
           run: |
             docker compose run --rm shell test php
         - name: Test extension with PHP Debug Build
-          if: matrix.arch == 'amd64'
+          if: matrix.platform == 'linux/amd64'
           run: |
             docker compose run --rm shell test debug-php
         - name: Test extension with Valgrind
-          if: matrix.arch == 'amd64'
+          if: matrix.platform == 'linux/amd64'
           run: |
             docker compose run --rm --env TEST_PHP_ARGS="-m" shell test gcc-valgrind-php
         - name: Test extension with LLVM Sanitizer (MemorySanitizer)
-          if: matrix.arch == 'amd64' && matrix.distro != 'alpine'
+          if: matrix.platform == 'linux/amd64' && matrix.distro != 'alpine'
           run: |
             docker compose run --rm --env TEST_PHP_ARGS="--msan" --env CC="/usr/bin/clang" --env CXX="/usr/bin/clang++" --env CFLAGS="-fsanitize=memory -DZEND_TRACK_ARENA_ALLOC" --env CPPFLAGS="-fsanitize=memory -DZEND_TRACK_ARENA_ALLOC" shell test clang-msan-php
         - name: Test extension with LLVM Sanitizer (AddressSanitizer)
-          if: matrix.arch == 'amd64' && matrix.distro != 'alpine'
+          if: matrix.platform == 'linux/amd64' && matrix.distro != 'alpine'
           run: |
             docker compose run --rm --env TEST_PHP_ARGS="--asan" --env CC="/usr/bin/clang" --env CXX="/usr/bin/clang++" --env CFLAGS="-fsanitize=address -DZEND_TRACK_ARENA_ALLOC" --env CPPFLAGS="-fsanitize=address -DZEND_TRACK_ARENA_ALLOC" shell test clang-asan-php
         - name: Test extension with LLVM Sanitizer (UndefinedBehaviorSanitizer)
-          if: matrix.arch == 'amd64' && matrix.distro != 'alpine'
+          if: matrix.platform == 'linux/amd64' && matrix.distro != 'alpine'
           run: |
             docker compose run --rm --env CC="/usr/bin/clang" --env CXX="/usr/bin/clang++" --env CFLAGS="-fsanitize=undefined -DZEND_TRACK_ARENA_ALLOC" --env CPPFLAGS="-fsanitize=undefined -DZEND_TRACK_ARENA_ALLOC" shell test clang-ubsan-php
   # Windows:
@@ -51,7 +51,7 @@ jobs:
   #       shell: cmd
   #   strategy:
   #     matrix:
-  #       arch: ["x64"]
+  #      .platform: ["x64"]
   #       version: ["8.1", "8.2", "8.3"]
   #       ts: ["nts", "ts"]
   #   steps:
@@ -61,13 +61,13 @@ jobs:
   #       id: setup-php
   #       uses: php/setup-php-sdk@v0.8
   #       with:
-  #         arch: ${{ matrix.arch }}
+  #        .platform: ${{ matrix.platform }}
   #         version: ${{ matrix.version }}
   #         ts: ${{ matrix.ts }}
   #     - name: Enable developer command prompt
   #       uses: ilammy/msvc-dev-cmd@v1
   #       with:
-  #         arch: ${{ matrix.arch }}
+  #        .platform: ${{ matrix.platform }}
   #         toolset: ${{ steps.setup-php.outputs.toolset }}
   #     - name: phpize
   #       working-directory: ext
