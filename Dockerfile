@@ -8,7 +8,7 @@ ARG PSKEL_SKIP_BUILD=""
 
 COPY ./pskel.sh /usr/local/bin/pskel
 
-RUN export CFLAGS="-fPIE -DZEND_TRACK_ARENA_ALLOC" \
+RUN export CFLAGS="-DZEND_TRACK_ARENA_ALLOC" \
  && export CPPFLAGS="${CFLAGS}" \
  && export BASE_OPTS="--enable-option-checking=fatal --enable-debug --disable-phpdbg --disable-cgi --disable-fpm --enable-cli --without-pcre-jit --disable-opcache-jit" \
  && if test -f "/etc/debian_version"; then \
@@ -27,7 +27,7 @@ RUN export CFLAGS="-fPIE -DZEND_TRACK_ARENA_ALLOC" \
 #  &&     CC="$(which "clang")" CXX="$(which "clang++")" CONFIGURE_OPTS="${BASE_OPTS} --enable-undefined-sanitizer" pskel build "clang-ubsan"; \
 #       fi; \
       CC="$(which "gcc")" CXX="$(which "g+++")" CONFIGURE_OPTS="${BASE_OPTS}" pskel build "debug" \
-#  &&   CC="$(which "gcc")" CXX="$(which "g+++")" CONFIGURE_OPTS="${BASE_OPTS} --with-valgrind" pskel build "gcc-valgrind"; \
+ &&   CC="$(which "gcc")" CXX="$(which "g+++")" CONFIGURE_OPTS="${BASE_OPTS} --with-valgrind" pskel build "gcc-valgrind"; \
 	fi
 
 COPY ./ext /ext
