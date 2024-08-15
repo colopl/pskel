@@ -3,7 +3,6 @@ services:
     build:
       context: ./
       dockerfile: ./Dockerfile
-    entrypoint: /bin/sh
     cap_add:
       - SYS_ADMIN
     security_opt:

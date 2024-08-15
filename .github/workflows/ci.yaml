@@ -23,27 +23,27 @@ jobs:
             docker compose build --pull --no-cache --build-arg PLATFORM="${{ matrix.platform }}" --build-arg IMAGE="php" --build-arg TAG="${{ matrix.version }}-${{ matrix.type }}-${{ matrix.distro }}" --build-arg PSKEL_SKIP_BUILD="${{ matrix.platform != 'linux/amd64' && '1' || '' }}"
         - name: Run tests
           run: |
-            docker compose run --entrypoint=/usr/local/bin/pskel --rm shell test php
+            docker compose run --rm shell pskel test
         - name: Test extension with PHP Debug Build
           if: matrix.platform == 'linux/amd64'
           run: |
-            docker compose run --entrypoint=/usr/local/bin/pskel --rm shell test debug-php
+            docker compose run --rm shell pskel test debug
         - name: Test extension with Valgrind
           if: matrix.platform == 'linux/amd64'
           run: |
-            docker compose run --entrypoint=/usr/local/bin/pskel --rm --env TEST_PHP_ARGS="-m" shell test gcc-valgrind-php
+            docker compose run --rm shell pskel test valgrind
         - name: Test extension with LLVM Sanitizer (MemorySanitizer)
           if: matrix.platform == 'linux/amd64' && matrix.distro != 'alpine'
           run: |
-            docker compose run --entrypoint=/usr/local/bin/pskel --rm --env TEST_PHP_ARGS="--msan" --env USE_ZEND_ALLOC=0 --env USE_TRACKED_ALLOC=1 --env ZEND_DONT_UNLOAD_MODULES=1 --env CC="/usr/bin/clang" --env CXX="/usr/bin/clang++" --env CFLAGS="-fsanitize=memory -DZEND_TRACK_ARENA_ALLOC" --env CPPFLAGS="-fsanitize=memory -DZEND_TRACK_ARENA_ALLOC" shell test clang-msan-php
+            docker compose run --rm shell pskel test msan
         - name: Test extension with LLVM Sanitizer (AddressSanitizer)
           if: matrix.platform == 'linux/amd64' && matrix.distro != 'alpine'
           run: |
-            docker compose run --entrypoint=/usr/local/bin/pskel --rm --env TEST_PHP_ARGS="--asan" --env USE_ZEND_ALLOC=0 --env USE_TRACKED_ALLOC=1 --env ZEND_DONT_UNLOAD_MODULES=1 --env CC="/usr/bin/clang" --env CXX="/usr/bin/clang++" --env CFLAGS="-fsanitize=address -DZEND_TRACK_ARENA_ALLOC" --env CPPFLAGS="-fsanitize=address -DZEND_TRACK_ARENA_ALLOC" shell test clang-asan-php
+            docker compose run --rm shell pskel test asan
         - name: Test extension with LLVM Sanitizer (UndefinedBehaviorSanitizer)
           if: matrix.platform == 'linux/amd64' && matrix.distro != 'alpine'
           run: |
-            docker compose run --entrypoint=/usr/local/bin/pskel --rm --env USE_ZEND_ALLOC=0 --env USE_TRACKED_ALLOC=1 --env ZEND_DONT_UNLOAD_MODULES=1 --env CC="/usr/bin/clang" --env CXX="/usr/bin/clang++" --env CFLAGS="-fsanitize=undefined -DZEND_TRACK_ARENA_ALLOC" --env CPPFLAGS="-fsanitize=undefined -DZEND_TRACK_ARENA_ALLOC" shell test clang-ubsan-php
+            docker compose run --rm shell pskel test ubsan
   # Windows:
   #   runs-on: windows-2022
   #   defaults:

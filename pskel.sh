@@ -32,9 +32,9 @@ EOF
 }
 
 cmd_test() {
-  if test "${1}" = "-h" || test "${1}" = "--help" || test "${#}" -lt 1; then
+  if test "${1}" = "-h" || test "${1}" = "--help"; then
     cat << EOF
-Usage: ${0} test [php_binary_name]
+Usage: ${0} test [test_type|php_binary_name]
 env:
   CFLAGS, CPPFLAGS:	Compile flags
   TEST_PHP_ARGS:	Test flags
@@ -42,9 +42,22 @@ EOF
     return 0
   fi
 
-  for BIN in "${1}" "${1}ize" "${1}-config"; do
-    if ! type "${1}" > /dev/null 2>&1; then
-      echo "Invalid argument: '${1}', executable file not found" >&2
+  if test "x${1}" = "x"; then
+    CC="/usr/bin/gcc"; CXX="/usr/bin/g++"; CMD="php"
+  else
+    case "${1}" in
+      debug) CC="/usr/bin/gcc"; CXX="/usr/bin/g++"; CMD="debug-php";;
+      valgrind) TEST_PHP_ARGS="${TEST_PHP_ARGS} -m" CC="/usr/bin/gcc"; CXX="/usr/bin/g++"; CMD="gcc-valgrind-php";;
+      msan) CFLAGS="${CFLAGS} -fsanitize=memory"; CPPFLAGS="${CPPFLAGS} -fsanitize=memory"; LDFLAGS="-fsanitize=memory"; CC="/usr/bin/clang"; CXX="/usr/bin/clang++"; CMD="clang-msan-php";;
+      asan) CFLAGS="${CFLAGS} -fsanitize=address"; CPPFLAGS="${CPPFLAGS} -fsanitize=address"; LDFLAGS="-fsanitize=address"; CC="/usr/bin/clang"; CXX="/usr/bin/clang++"; CMD="clang-asan-php";;
+      ubsan) CFLAGS="${CFLAGS} -fsanitize=undefined"; CPPFLAGS="${CPPFLAGS} -fsanitize=undefined"; LDFLAGS="-fsanitize=undefined"; CC="/usr/bin/clang"; CXX="/usr/bin/clang++"; CMD="clang-ubsan-php";;
+      *) CMD="${1}"
+    esac
+  fi
+
+  for BIN in "${CMD}" "${CMD}ize" "${CMD}-config"; do
+    if ! type "${BIN}" > /dev/null 2>&1; then
+      echo "Invalid argument: '${CMD}', executable file not found" >&2
       exit 1
     fi
   done
@@ -62,8 +75,8 @@ EOF
   fi
 
   cd "${PSKEL_EXT_DIR}"
-    "${1}ize"
-    ./configure --with-php-config="$(which "${1}-config")"
+    "${CMD}ize"
+    CC=${CC} CXX=${CXX} CFLAGS="${CFLAGS}" CPPFLAGS="${CPPFLAGS}" LDFLAGS="${LDFLAGS}" ./configure --with-php-config="$(which "${CMD}-config")"
     make clean
     make -j"$(nproc)"
     TEST_PHP_ARGS="${TEST_PHP_ARGS} --show-diff -q" make test

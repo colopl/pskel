@@ -1,12 +1,16 @@
 ARG PLATFORM=${BUILDPLATFORM:-linux/amd64}
 ARG IMAGE=php
-ARG TAG=8.3-cli-bookworm
+ARG TAG=8.3-zts-bookworm
 
 FROM --platform=${PLATFORM} ${IMAGE}:${TAG}
 
 ARG PSKEL_SKIP_BUILD=""
 
 COPY ./pskel.sh /usr/local/bin/pskel
+
+ENV USE_ZEND_ALLOC 0
+ENV USE_TRACKED_ALLOC 1
+ENV ZEND_DONT_UNLOAD_MODULES 1
 
 RUN docker-php-source extract \
  && if test -f "/etc/debian_version"; then \
@@ -27,16 +31,14 @@ RUN docker-php-source extract \
  && if test "x${PSKEL_SKIP_BUILD}" = "x"; then \
       export CFLAGS="-DZEND_TRACK_ARENA_ALLOC" \
  &&   export CPPFLAGS="${CFLAGS}" \
- &&   export BASE_OPTS="--enable-debug $(php -r "echo PHP_ZTS === 1 ? '--enable-zts' : '';") --enable-option-checking=fatal --disable-phpdbg --disable-cgi --disable-fpm --enable-cli --without-pcre-jit --disable-opcache-jit" \
+ &&   export BASE_OPTS="--enable-debug $(php -r "echo PHP_ZTS === 1 ? '--enable-zts' : '';") --enable-option-checking=fatal --disable-phpdbg --disable-cgi --disable-fpm --enable-cli --without-pcre-jit --disable-opcache-jit --disable-zend-max-execution-timers" \
  &&   CC="$(which "gcc")" CXX="$(which "g++")" CONFIGURE_OPTS="${BASE_OPTS}" pskel build "debug" \
  &&   CC="$(which "gcc")" CXX="$(which "g++")" CONFIGURE_OPTS="${BASE_OPTS} --with-valgrind" pskel build "gcc-valgrind" \
  &&   if test -f "/etc/debian_version"; then \
-        CC="$(which "clang")" CXX="$(which "clang++")" CONFIGURE_OPTS="${BASE_OPTS} --enable-memory-sanitizer" pskel build "clang-msan" \
+        CC="$(which "clang")" CXX="$(which "clang++")" LDFLAGS="${LDFLAGS} -fsanitize=memory" CONFIGURE_OPTS="${BASE_OPTS} --enable-memory-sanitizer" pskel build "clang-msan" \
  &&     CC="$(which "clang")" CXX="$(which "clang++")" LDFLAGS="${LDFLAGS} -fsanitize=address" CONFIGURE_OPTS="${BASE_OPTS} --enable-address-sanitizer" pskel build "clang-asan" \
  &&     CC="$(which "clang")" CXX="$(which "clang++")" LDFLAGS="${LDFLAGS} -fsanitize=undefined" CONFIGURE_OPTS="${BASE_OPTS} --enable-undefined-sanitizer" pskel build "clang-ubsan"; \
       fi; \
     fi
 
 COPY ./ext /ext
-
-ENTRYPOINT [ "/usr/local/bin/pskel" ]
