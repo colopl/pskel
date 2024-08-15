@@ -8,9 +8,9 @@ ARG PSKEL_SKIP_BUILD=""
 
 COPY ./pskel.sh /usr/local/bin/pskel
 
-ENV USE_ZEND_ALLOC 0
-ENV USE_TRACKED_ALLOC 1
-ENV ZEND_DONT_UNLOAD_MODULES 1
+ENV USE_ZEND_ALLOC=0
+ENV USE_TRACKED_ALLOC=1
+ENV ZEND_DONT_UNLOAD_MODULES=1
 
 RUN docker-php-source extract \
  && if test -f "/etc/debian_version"; then \
