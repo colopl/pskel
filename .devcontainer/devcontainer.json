@@ -12,6 +12,5 @@
 		}
 	},
 	"dockerComposeFile": "./../compose.yaml",
-	"service": "shell",
-	"overrideCommand": true
+	"service": "shell"
 }

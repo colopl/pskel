@@ -20,7 +20,7 @@ jobs:
           uses: docker/setup-buildx-action@v3
         - name: Build container
           run: |
-            docker compose build --pull --no-cache --build-arg PLATFORM="${{ matrix.platform }}" --build-arg IMAGE="php" --build-arg TAG="${{ matrix.version }}-${{ matrix.type }}-${{ matrix.distro }}" --build-arg PSKEL_SKIP_BUILD="${{ matrix.platform != 'linux/amd64' && '1' || '' }}"
+            docker compose build --pull --no-cache --build-arg PLATFORM="${{ matrix.platform }}" --build-arg IMAGE="php" --build-arg TAG="${{ matrix.version }}-${{ matrix.type }}-${{ matrix.distro }}"
         - name: Run tests
           run: |
             docker compose run --rm shell pskel test

@@ -46,11 +46,31 @@ EOF
     CC="/usr/bin/gcc"; CXX="/usr/bin/g++"; CMD="php"
   else
     case "${1}" in
-      debug) CC="/usr/bin/gcc"; CXX="/usr/bin/g++"; CMD="debug-php";;
-      valgrind) TEST_PHP_ARGS="${TEST_PHP_ARGS} -m" CC="/usr/bin/gcc"; CXX="/usr/bin/g++"; CMD="gcc-valgrind-php";;
-      msan) CFLAGS="${CFLAGS} -fsanitize=memory"; CPPFLAGS="${CPPFLAGS} -fsanitize=memory"; LDFLAGS="-fsanitize=memory"; CC="/usr/bin/clang"; CXX="/usr/bin/clang++"; CMD="clang-msan-php";;
-      asan) CFLAGS="${CFLAGS} -fsanitize=address"; CPPFLAGS="${CPPFLAGS} -fsanitize=address"; LDFLAGS="-fsanitize=address"; CC="/usr/bin/clang"; CXX="/usr/bin/clang++"; CMD="clang-asan-php";;
-      ubsan) CFLAGS="${CFLAGS} -fsanitize=undefined"; CPPFLAGS="${CPPFLAGS} -fsanitize=undefined"; LDFLAGS="-fsanitize=undefined"; CC="/usr/bin/clang"; CXX="/usr/bin/clang++"; CMD="clang-ubsan-php";;
+      debug)
+        if ! type "debug-php" > /dev/null 2>&1; then
+          CC="/usr/bin/gcc" CXX="/usr/bin/g++" CFLAGS="-DZEND_TRACK_ARENA_ALLOC" CPPFLAGS="${CFLAGS}" CONFIGURE_OPTS="--enable-debug $(php -r "echo PHP_ZTS === 1 ? '--enable-zts' : '';") --enable-option-checking=fatal --disable-phpdbg --disable-cgi --disable-fpm --enable-cli --without-pcre-jit --disable-opcache-jit --disable-zend-max-execution-timers" cmd_build "debug"
+        fi && \
+        CC="/usr/bin/gcc"; CXX="/usr/bin/g++"; CMD="debug-php";;
+      valgrind)
+        if ! type "gcc-valgrind-php" > /dev/null 2>&1; then
+          CC="/usr/bin/gcc" CXX="/usr/bin/g++" CFLAGS="-DZEND_TRACK_ARENA_ALLOC" CPPFLAGS="${CFLAGS}" CONFIGURE_OPTS="--enable-debug $(php -r "echo PHP_ZTS === 1 ? '--enable-zts' : '';") --enable-option-checking=fatal --disable-phpdbg --disable-cgi --disable-fpm --enable-cli --without-pcre-jit --disable-opcache-jit --disable-zend-max-execution-timers --with-valgrind" cmd_build "gcc-valgrind"
+        fi && \
+        TEST_PHP_ARGS="${TEST_PHP_ARGS} -m" CC="/usr/bin/gcc"; CXX="/usr/bin/g++"; CMD="gcc-valgrind-php";;
+      msan)
+        if ! type "clang-msan-php" > /dev/null 2>&1; then
+          CC="/usr/bin/clang" CXX="/usr/bin/clang++" CFLAGS="-DZEND_TRACK_ARENA_ALLOC" CPPFLAGS="${CFLAGS}" LDFLAGS="${LDFLAGS} -fsanitize=memory" CONFIGURE_OPTS="--enable-debug $(php -r "echo PHP_ZTS === 1 ? '--enable-zts' : '';") --enable-option-checking=fatal --disable-phpdbg --disable-cgi --disable-fpm --enable-cli --without-pcre-jit --disable-opcache-jit --disable-zend-max-execution-timers --enable-memory-sanitizer" cmd_build "clang-msan"
+        fi && \
+        CFLAGS="${CFLAGS} -fsanitize=memory"; CPPFLAGS="${CPPFLAGS}"; LDFLAGS="-fsanitize=memory"; CC="/usr/bin/clang"; CXX="/usr/bin/clang++"; CMD="clang-msan-php";;
+      asan)
+        if ! type "clang-asan-php" > /dev/null 2>&1; then
+          CC="/usr/bin/clang" CXX="/usr/bin/clang++" CFLAGS="-DZEND_TRACK_ARENA_ALLOC" CPPFLAGS="${CFLAGS}" LDFLAGS="${LDFLAGS} -fsanitize=address" CONFIGURE_OPTS="--enable-debug $(php -r "echo PHP_ZTS === 1 ? '--enable-zts' : '';") --enable-option-checking=fatal --disable-phpdbg --disable-cgi --disable-fpm --enable-cli --without-pcre-jit --disable-opcache-jit --disable-zend-max-execution-timers --enable-address-sanitizer" cmd_build "clang-asan"
+        fi && \
+        CFLAGS="${CFLAGS} -fsanitize=address"; CPPFLAGS="${CPPFLAGS}"; LDFLAGS="-fsanitize=address"; CC="/usr/bin/clang"; CXX="/usr/bin/clang++"; CMD="clang-asan-php";;
+      ubsan)
+        if ! type "clang-ubsan-php" > /dev/null 2>&1; then
+          CC="/usr/bin/clang" CXX="/usr/bin/clang++" CFLAGS="-DZEND_TRACK_ARENA_ALLOC" CPPFLAGS="${CFLAGS}" LDFLAGS="${LDFLAGS} -fsanitize=undefined" CONFIGURE_OPTS="--enable-debug $(php -r "echo PHP_ZTS === 1 ? '--enable-zts' : '';") --enable-option-checking=fatal --disable-phpdbg --disable-cgi --disable-fpm --enable-cli --without-pcre-jit --disable-opcache-jit --disable-zend-max-execution-timers --enable-undefined-sanitizer" cmd_build "clang-ubsan"
+        fi && \
+        CFLAGS="${CFLAGS} -fsanitize=undefined"; CPPFLAGS="${CPPFLAGS}"; LDFLAGS="-fsanitize=undefined"; CC="/usr/bin/clang"; CXX="/usr/bin/clang++"; CMD="clang-ubsan-php";;
       *) CMD="${1}"
     esac
   fi

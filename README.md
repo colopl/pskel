@@ -16,32 +16,12 @@ A skeleton project for quickly setting up an environment to develop extensions f
 
 Yes. Pskel comes pre-setup with MySQL as a example. If you want to add something, you can easily do so by editing the `compose.yaml`.
 
-#### Can I use a debug version of PHP?
-
-A debug build of PHP is included in advance. Debug builds using GCC and Clang are available, and Valgrind support is enabled. With the Clang build, you can also use MemorySanitizer.
-
-They each have the following binary prefixes. The build toolchains are the same.
-
-- `debug-php`
-- `gcc-valgrind-php`
-- `clang-msan-php`
-- `clang-asan-php`
-- `clang-ubsan-php`
-
-For example, the method to test the extension using GCC + Valgrind is as follows:
-
-```
-# gcc-valgrind-phpize
-# ./configure --with-php-config=$(which gcc-valgrind-php-config)
-# TEST_PHP_ARGS="-q -m --show-diff" make -j$(nproc) test
-```
-
 #### Can I debug using gdb?
 
 Yes. Build using the debug version of PHP and run as follows:
 
 ```
-# gdb --args gcc-valgrind-php -dextension=./modules/your_extension_name.so example.php
+# gdb --args <php_binary> -dextension=./modules/your_extension_name.so example.php
 ```
 
 #### Can I develop using something other than Visual Studio Code?
