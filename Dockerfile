@@ -1,6 +1,6 @@
 ARG PLATFORM=${BUILDPLATFORM:-linux/amd64}
 ARG IMAGE=php
-ARG TAG=8.3-zts-alpine
+ARG TAG=8.3-zts-bookworm
 
 FROM --platform=${PLATFORM} ${IMAGE}:${TAG}
 
