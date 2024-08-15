@@ -9,8 +9,8 @@ services:
       - seccomp:unconfined
     privileged: true
     tty: true
-    # depends_on:
-    #   - mysql
+  #   depends_on:
+  #     - mysql
   # mysql:
   #   image: mysql:8.0
   #   environment:

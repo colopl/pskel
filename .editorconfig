@@ -32,3 +32,15 @@ max_line_length          = 80
 
 [*.patch]
 trim_trailing_whitespace = false
+
+[*.json]
+indent_size              = 2
+indent_style             = space
+
+[compose.yaml]
+indent_size              = 2
+indent_style             = space
+
+[Dockerfile]
+indent_size              = 2
+indent_style             = space
