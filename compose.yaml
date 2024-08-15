@@ -1,15 +1,14 @@
 services:
-  dev:
+  shell:
     build:
       context: ./
       dockerfile: ./Dockerfile
     cap_add:
-      - SYS_PTRACE
+      - SYS_ADMIN
     security_opt:
       - seccomp:unconfined
     privileged: true
     tty: true
-    command: ["sleep", "infinity"]
     # depends_on:
     #   - mysql
   # mysql:
