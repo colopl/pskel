@@ -51,7 +51,7 @@ jobs:
   #       shell: cmd
   #   strategy:
   #     matrix:
-  #      .platform: ["x64"]
+  #       platform: ["x64"]
   #       version: ["8.1", "8.2", "8.3"]
   #       ts: ["nts", "ts"]
   #   steps:
@@ -61,13 +61,13 @@ jobs:
   #       id: setup-php
   #       uses: php/setup-php-sdk@v0.8
   #       with:
-  #        .platform: ${{ matrix.platform }}
+  #         platform: ${{ matrix.platform }}
   #         version: ${{ matrix.version }}
   #         ts: ${{ matrix.ts }}
   #     - name: Enable developer command prompt
   #       uses: ilammy/msvc-dev-cmd@v1
   #       with:
-  #        .platform: ${{ matrix.platform }}
+  #         platform: ${{ matrix.platform }}
   #         toolset: ${{ steps.setup-php.outputs.toolset }}
   #     - name: phpize
   #       working-directory: ext
