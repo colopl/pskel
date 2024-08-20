@@ -31,7 +31,7 @@ jobs:
             docker compose build --pull --no-cache --build-arg PLATFORM="linux/amd64" --build-arg IMAGE="php" --build-arg TAG="${{ matrix.version }}-${{ matrix.type }}-${{ matrix.distro }}"
         - name: Test with gcov
           run: |
-            docker compose run -v "$(pwd)/ext:/ext" --rm shell /bin/sh -c "pskel test gcov && gcovr --root /ext --exclude Zend/* --exclude third_party/* --xml coverage.xml"
+            docker compose run -v "$(pwd)/ext:/ext" --rm shell /bin/sh -c "pskel test gcov && gcovr --root /ext --exclude Zend/* --exclude third_party/* --xml /coverage.xml"
         - name: Make coverage badge
         #   if: github.ref == 'refs/heads/main' && github.event_name == 'push'
           uses: action-badges/cobertura-coverage-xml-badges@d538b75ae142f6dc1814baeffb9535d2d28054f9
@@ -39,4 +39,4 @@ jobs:
             file-name: coverage-${{ matrix.version }}-${{ matrix.type }}-${{ matrix.distro }}.svg
             badge-branch: automations/badges
             github-token: '${{ secrets.GITHUB_TOKEN }}'
-            coverage-file-name: coverage.xml
+            coverage-file-name: /coverage.xml
