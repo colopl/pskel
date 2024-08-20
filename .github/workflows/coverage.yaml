@@ -15,6 +15,11 @@ jobs:
     steps:
         - name: Checkout
           uses: actions/checkout@v4
+        - name: Prepare badge branch
+        #   if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+          uses: action-badges/create-orphan-branch@ad8308a8dded1b6a359b067044b6d2b9bc81d810
+          with:
+            branch-name: automations/badges
         - name: Setup QEMU
           uses: docker/setup-qemu-action@v3
           with:
@@ -27,11 +32,6 @@ jobs:
         - name: Test with gcov
           run: |
             docker compose run -v "$(pwd)/ext:/ext" --rm shell /bin/sh -c "pskel test gcov && gcovr --root /ext --exclude Zend/* --exclude third_party/* --xml coverage.xml"
-        - name: Prepare badge branch
-        #   if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-          uses: action-badges/create-orphan-branch@ad8308a8dded1b6a359b067044b6d2b9bc81d810
-          with:
-            branch-name: automations/badges
         - name: Make coverage badge
         #   if: github.ref == 'refs/heads/main' && github.event_name == 'push'
           uses: action-badges/cobertura-coverage-xml-badges@d538b75ae142f6dc1814baeffb9535d2d28054f9
