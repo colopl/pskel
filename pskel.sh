@@ -27,8 +27,9 @@ EOF
   fi
 
   /usr/local/bin/php "/usr/src/php/ext/ext_skel.php" --ext "${1}" --dir "/tmp" ${@}
-  rm -rf "${PSKEL_EXT_DIR}"
-  mv "/tmp/${1}" "${PSKEL_EXT_DIR}"
+  rm "${PSKEL_EXT_DIR}/.gitkeep"
+  rsync -av "/tmp/${1}/" "${PSKEL_EXT_DIR}/"
+  rm -rf "/tmp/${1}"
 }
 
 cmd_test() {
@@ -102,8 +103,8 @@ EOF
   cd "${PSKEL_EXT_DIR}"
     "${CMD}ize"
     if test "$("${CMD}" -r "echo PHP_VERSION_ID;")" -lt "80400"; then
+      patch "./build/ltmain.sh" "./../patches/ltmain.sh.patch"
       echo "[Pskel] ltmain.sh patched" >&2
-      patch "./build/ltmain.sh" "../patch/ltmain.sh.patch"
     fi
     CC=${CC} CXX=${CXX} CFLAGS="${CFLAGS}" CPPFLAGS="${CPPFLAGS}" LDFLAGS="${LDFLAGS}" ./configure --with-php-config="$(which "${CMD}-config")"
     make clean

@@ -24,7 +24,7 @@ jobs:
             docker compose build --pull --no-cache --build-arg PLATFORM="linux/amd64" --build-arg IMAGE="php" --build-arg TAG="${{ matrix.version }}-${{ matrix.type }}-${{ matrix.distro }}"
         - name: Test with gcov
           run: |
-            docker compose run --rm shell pskel test gcov
+            docker compose run -v "$(pwd)/ext:/ext" --rm shell pskel test gcov
         - name: Generate a code coverage report
           uses: threeal/gcovr-action@c803a30a5609085398bf4ca2523dde7b90bb33cd
           with:
