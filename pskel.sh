@@ -51,6 +51,11 @@ EOF
           CC="$(which "gcc")" CXX="$(which "g++")" CFLAGS="-DZEND_TRACK_ARENA_ALLOC" CPPFLAGS="${CFLAGS}" CONFIGURE_OPTS="--enable-debug $(php -r "echo PHP_ZTS === 1 ? '--enable-zts' : '';") --enable-option-checking=fatal --disable-phpdbg --disable-cgi --disable-fpm --enable-cli --without-pcre-jit --disable-opcache-jit --disable-zend-max-execution-timers" cmd_build "debug"
         fi && \
         CC="$(which "gcc")"; CXX="$(which "g++")"; CMD="debug-php";;
+      gcov)
+        if ! type "gcc-gcov-php" > /dev/null 2>&1; then
+          CC="$(which "gcc")" CXX="$(which "g++")" CFLAGS="--coverage -DZEND_TRACK_ARENA_ALLOC" CPPFLAGS="${CFLAGS}" CONFIGURE_OPTS="--enable-gcov --enable-debug $(php -r "echo PHP_ZTS === 1 ? '--enable-zts' : '';") --enable-option-checking=fatal --disable-phpdbg --disable-cgi --disable-fpm --enable-cli --without-pcre-jit --disable-opcache-jit --disable-zend-max-execution-timers" cmd_build "gcc-gcov"
+        fi && \
+        CFLAGS="${CFLAGS} --coverage" CPPFLAGS="${CPPFLAGS} --coverage" CC="$(which "gcc")"; CXX="$(which "g++")"; CMD="gcc-gcov-php";;
       valgrind)
         if ! type "gcc-valgrind-php" > /dev/null 2>&1; then
           CC="$(which "gcc")" CXX="$(which "g++")" CFLAGS="-DZEND_TRACK_ARENA_ALLOC" CPPFLAGS="${CFLAGS}" CONFIGURE_OPTS="--enable-debug $(php -r "echo PHP_ZTS === 1 ? '--enable-zts' : '';") --enable-option-checking=fatal --disable-phpdbg --disable-cgi --disable-fpm --enable-cli --without-pcre-jit --disable-opcache-jit --disable-zend-max-execution-timers --with-valgrind" cmd_build "gcc-valgrind"
@@ -96,6 +101,10 @@ EOF
 
   cd "${PSKEL_EXT_DIR}"
     "${CMD}ize"
+    if test "$("${CMD}" -r "echo PHP_VERSION_ID;")" -lt "80400"; then
+      echo "[Pskel] ltmain.sh patched" >&2
+      patch "./build/ltmain.sh" "../patch/ltmain.sh.patch"
+    fi
     CC=${CC} CXX=${CXX} CFLAGS="${CFLAGS}" CPPFLAGS="${CPPFLAGS}" LDFLAGS="${LDFLAGS}" ./configure --with-php-config="$(which "${CMD}-config")"
     make clean
     make -j"$(nproc)"

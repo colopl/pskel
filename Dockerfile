@@ -1,6 +1,6 @@
 ARG PLATFORM=${BUILDPLATFORM:-linux/amd64}
 ARG IMAGE=php
-ARG TAG=8.3-zts-bookworm
+ARG TAG=8.3-zts-alpine
 
 FROM --platform=${PLATFORM} ${IMAGE}:${TAG}
 
@@ -19,12 +19,14 @@ RUN docker-php-source extract \
  &&   DEBIAN_FRONTEND="noninteractive" apt-get install -y "bison" "re2c" "zlib1g-dev" "libsqlite3-dev" "libxml2-dev" \
         "autoconf" "pkg-config" "make" "gcc" "valgrind" "git" "ssh" \
         "clang-20" \
+        "lcov" \
  &&   update-alternatives --install "/usr/bin/clang" clang "/usr/bin/clang-20" 100 \
  &&   update-alternatives --install "/usr/bin/clang++" clang++ "/usr/bin/clang++-20" 100; \
     else \
       apk add --no-cache "bison" "zlib-dev" "sqlite-dev" "libxml2-dev" \
         "autoconf" "pkgconfig" "make" "gcc" "g++" "valgrind" "valgrind-dev" \
-        "musl-dev" "git" "openssh"; \
+        "musl-dev" "git" "openssh" \
+        "patch" "lcov"; \
     fi
 
 COPY ./ext /ext
