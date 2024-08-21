@@ -40,6 +40,8 @@ jobs:
     needs: [Linux]
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
       - name: Download coverage artifacts
         uses: actions/download-artifact@v4
       - name: Merge coverages
