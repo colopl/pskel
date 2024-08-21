@@ -6,6 +6,8 @@ on:
     - cron: '0 0 * * 1'
 permissions:
   contents: write
+  pull-requests: write
+  repository-projects: write
 jobs:
   Linux:
     runs-on: ubuntu-latest
