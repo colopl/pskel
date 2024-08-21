@@ -5,7 +5,60 @@ bongo
 --FILE--
 <?php
 test3();
-echo "bongo";
 ?>
 --EXPECT--
-bongo
+The extension bongo is loaded and working!
+The extension bongo is loaded and working!
+The extension bongo is loaded and working!
+The extension bongo is loaded and working!
+The extension bongo is loaded and working!
+The extension bongo is loaded and working!
+The extension bongo is loaded and working!
+The extension bongo is loaded and working!
+The extension bongo is loaded and working!
+The extension bongo is loaded and working!
+The extension bongo is loaded and working!
+The extension bongo is loaded and working!
+The extension bongo is loaded and working!
+The extension bongo is loaded and working!
+The extension bongo is loaded and working!
+The extension bongo is loaded and working!
+The extension bongo is loaded and working!
+The extension bongo is loaded and working!
+The extension bongo is loaded and working!
+The extension bongo is loaded and working!
+The extension bongo is loaded and working!
+The extension bongo is loaded and working!
+The extension bongo is loaded and working!
+The extension bongo is loaded and working!
+The extension bongo is loaded and working!
+The extension bongo is loaded and working!
+The extension bongo is loaded and working!
+The extension bongo is loaded and working!
+The extension bongo is loaded and working!
+The extension bongo is loaded and working!
+The extension bongo is loaded and working!
+The extension bongo is loaded and working!
+The extension bongo is loaded and working!
+The extension bongo is loaded and working!
+The extension bongo is loaded and working!
+The extension bongo is loaded and working!
+The extension bongo is loaded and working!
+The extension bongo is loaded and working!
+The extension bongo is loaded and working!
+The extension bongo is loaded and working!
+The extension bongo is loaded and working!
+The extension bongo is loaded and working!
+The extension bongo is loaded and working!
+The extension bongo is loaded and working!
+The extension bongo is loaded and working!
+The extension bongo is loaded and working!
+The extension bongo is loaded and working!
+The extension bongo is loaded and working!
+The extension bongo is loaded and working!
+The extension bongo is loaded and working!
+The extension bongo is loaded and working!
+The extension bongo is loaded and working!
+The extension bongo is loaded and working!
+The extension bongo is loaded and working!
+The extension bongo is loaded and working!
