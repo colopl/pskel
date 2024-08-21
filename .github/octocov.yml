@@ -1,6 +1,6 @@
 coverage:
   paths:
-    - lcov.info
+    - ../lcov.info
   acceptable: current >= 60%
 testExecutionTime:
   acceptable: current <= 5min && diff < 5min
