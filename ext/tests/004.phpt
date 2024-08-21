@@ -5,7 +5,7 @@ bongo
 --FILE--
 <?php
 test3()
-echo "bongo"
+echo "bongo";
 ?>
 --EXPECT--
 bongo
