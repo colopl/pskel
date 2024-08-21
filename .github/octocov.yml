@@ -2,6 +2,8 @@ coverage:
   paths:
     - ../lcov.info
   acceptable: current >= 60%
+testExecutionTime:
+  if: false
 comment:
   if: is_pull_request
 diff:

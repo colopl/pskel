@@ -4,7 +4,7 @@ test3() Basic test
 bongo
 --FILE--
 <?php
-test3()
+test3();
 echo "bongo";
 ?>
 --EXPECT--
