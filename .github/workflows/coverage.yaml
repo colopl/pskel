@@ -28,7 +28,7 @@ jobs:
             docker compose build --pull --no-cache --build-arg PLATFORM="linux/amd64" --build-arg IMAGE="php" --build-arg TAG="${{ matrix.version }}-${{ matrix.type }}-${{ matrix.distro }}"
         - name: Test with gcov
           run: |
-            docker compose run -v "$(pwd)/ext:/ext" --rm shell /bin/sh -c "pskel test gcov && gcovr /ext --exclude Zend/* --exclude third_party/* --xml /ext/coverage.xml"
+            docker compose run -v "$(pwd)/ext:/ext" --rm shell /bin/sh -c 'pskel test gcov && lcov --capture --directory "/ext" --output-file "/ext/lcov.info" --exclude "Zend/*" --exclude "third_party/*"'
         - name: Coverage report
           uses: k1LoW/octocov-action@v1
           with:

@@ -1,7 +1,7 @@
 coverage:
   acceptable: 60%
   paths:
-    - ext/coverage.xml
+    - ../ext/lcov.info
 comment:
   if: is_pull_request
 diff:
