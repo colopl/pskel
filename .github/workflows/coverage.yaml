@@ -56,7 +56,6 @@ jobs:
           CMD+=" -o lcov.info"
           echo "Merging coverages: ${LCOV_FILES}"
           ${CMD}
-          find . -type f
       - name: Report coverage
         uses: k1LoW/octocov-action@v1
         with:
