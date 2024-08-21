@@ -1,0 +1,13 @@
+coverage:
+  acceptable: 60%
+  paths:
+    - ext/coverage.xml
+comment:
+  if: is_pull_request
+diff:
+  datastores:
+    - artifact://${GITHUB_REPOSITORY}
+report:
+  if: is_default_branch
+  datastores:
+    - artifact://${GITHUB_REPOSITORY}
