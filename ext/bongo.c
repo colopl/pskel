@@ -43,13 +43,79 @@ PHP_FUNCTION(test2)
 }
 /* }}}*/
 
+PHP_FUNCTION(test3)
+{
+	const char *var = "World";
+	zend_string *retval;
+
+#if defined(ZTS)
+	retval = strpprintf(0, "Hello %s", var);
+	retval = strpprintf(0, "Hello %s", var);
+	retval = strpprintf(0, "Hello %s", var);
+	retval = strpprintf(0, "Hello %s", var);
+	retval = strpprintf(0, "Hello %s", var);
+	retval = strpprintf(0, "Hello %s", var);
+	retval = strpprintf(0, "Hello %s", var);
+	retval = strpprintf(0, "Hello %s", var);
+	retval = strpprintf(0, "Hello %s", var);
+	retval = strpprintf(0, "Hello %s", var);
+	retval = strpprintf(0, "Hello %s", var);
+	retval = strpprintf(0, "Hello %s", var);
+	retval = strpprintf(0, "Hello %s", var);
+	retval = strpprintf(0, "Hello %s", var);
+	retval = strpprintf(0, "Hello %s", var);
+	retval = strpprintf(0, "Hello %s", var);
+	retval = strpprintf(0, "Hello %s", var);
+	retval = strpprintf(0, "Hello %s", var);
+	retval = strpprintf(0, "Hello %s", var);
+	retval = strpprintf(0, "Hello %s", var);
+	retval = strpprintf(0, "Hello %s", var);
+	retval = strpprintf(0, "Hello %s", var);
+	retval = strpprintf(0, "Hello %s", var);
+	retval = strpprintf(0, "Hello %s", var);
+	retval = strpprintf(0, "Hello %s", var);
+	retval = strpprintf(0, "Hello %s", var);
+	retval = strpprintf(0, "Hello %s", var);
+	retval = strpprintf(0, "Hello %s", var);
+	retval = strpprintf(0, "Hello %s", var);
+	retval = strpprintf(0, "Hello %s", var);
+	retval = strpprintf(0, "Hello %s", var);
+	retval = strpprintf(0, "Hello %s", var);
+	retval = strpprintf(0, "Hello %s", var);
+	retval = strpprintf(0, "Hello %s", var);
+	retval = strpprintf(0, "Hello %s", var);
+	retval = strpprintf(0, "Hello %s", var);
+	retval = strpprintf(0, "Hello %s", var);
+	retval = strpprintf(0, "Hello %s", var);
+	retval = strpprintf(0, "Hello %s", var);
+	retval = strpprintf(0, "Hello %s", var);
+	retval = strpprintf(0, "Hello %s", var);
+	retval = strpprintf(0, "Hello %s", var);
+	retval = strpprintf(0, "Hello %s", var);
+	retval = strpprintf(0, "Hello %s", var);
+	retval = strpprintf(0, "Hello %s", var);
+	retval = strpprintf(0, "Hello %s", var);
+	retval = strpprintf(0, "Hello %s", var);
+	retval = strpprintf(0, "Hello %s", var);
+	retval = strpprintf(0, "Hello %s", var);
+	retval = strpprintf(0, "Hello %s", var);
+	retval = strpprintf(0, "Hello %s", var);
+	retval = strpprintf(0, "Hello %s", var);
+	retval = strpprintf(0, "Hello %s", var);
+	retval = strpprintf(0, "Hello %s", var);
+#endif
+
+	retval = strpprintf(0, "Hello %s", var);
+
+	RETURN_STR(retval);
+}
+
 /* {{{ PHP_RINIT_FUNCTION */
 PHP_RINIT_FUNCTION(bongo)
 {
 #if defined(ZTS) && defined(COMPILE_DL_BONGO)
 	ZEND_TSRMLS_CACHE_UPDATE();
 #endif
-
 	return SUCCESS;
 }
 /* }}} */

@@ -31,7 +31,7 @@ jobs:
           docker compose build --pull --no-cache --build-arg PLATFORM="linux/amd64" --build-arg IMAGE="php" --build-arg TAG="${{ matrix.version }}-${{ matrix.type }}-${{ matrix.distro }}"
       - name: Test with gcov
         run: |
-          docker compose run -v "$(pwd)/ext:/ext" --rm shell /bin/sh -c 'pskel test gcov && lcov --capture --directory "/ext" --output-file "/ext/lcov.info" --exclude "Zend/*" --exclude "third_party/*"'
+          docker compose run -v "$(pwd)/ext:/ext" --rm shell /bin/sh -c 'pskel test gcov && lcov --capture --directory "/ext" --output-file "/ext/lcov.info" --exclude "/usr/local/include/*" --exclude "third_party/*" && lcov --list "/ext/lcov.info"'
       - name: Upload coverage to artifact
         uses: actions/upload-artifact@v4
         with:
