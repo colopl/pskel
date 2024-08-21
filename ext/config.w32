@@ -1,0 +1,7 @@
+ARG_ENABLE('bongo', 'bongo support', 'no');
+
+if (PHP_BONGO != 'no') {
+	AC_DEFINE('HAVE_BONGO', 1, 'bongo support enabled');
+
+	EXTENSION('bongo', 'bongo.c', null, '/DZEND_ENABLE_STATIC_TSRMLS_CACHE=1');
+}
