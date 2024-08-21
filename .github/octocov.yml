@@ -1,7 +1,12 @@
 coverage:
-  acceptable: 60%
   paths:
     - ../ext/lcov.info
+  acceptable: current >= 60%
+codeToTestRatio:
+  code:
+    - '../ext/*.c'
+testExecutionTime:
+  acceptable: current <= 5min && diff < 5min
 comment:
   if: is_pull_request
 diff:
