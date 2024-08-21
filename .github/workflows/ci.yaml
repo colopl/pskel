@@ -4,6 +4,8 @@ on:
   pull_request:
   schedule:
     - cron: '0 0 * * 1'
+permissions:
+  pull-requests: write
 jobs:
   Linux:
     runs-on: ubuntu-latest
