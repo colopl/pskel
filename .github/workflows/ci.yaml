@@ -1,9 +1,14 @@
 name: CI
 on:
   push:
+    branches:
+        - main
   pull_request:
   schedule:
     - cron: '0 0 * * 1'
+permissions:
+  contents: write
+  pull-requests: write
 jobs:
   Linux:
     runs-on: ubuntu-latest
@@ -25,7 +30,7 @@ jobs:
         - name: Build container
           run: |
             docker compose build --pull --no-cache --build-arg PLATFORM="${{ matrix.platform }}" --build-arg IMAGE="php" --build-arg TAG="${{ matrix.version }}-${{ matrix.type }}-${{ matrix.distro }}"
-        - name: Run tests
+        - name: Test extension with Bundled PHP
           run: |
             docker compose run --rm shell pskel test
         - name: Test extension with PHP Debug Build

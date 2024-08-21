@@ -1,0 +1,35 @@
+name: Coverage
+permissions:
+  contents: write
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+jobs:
+  Linux:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        version: ['8.3']
+        type: ['cli', 'zts']
+        distro: ['bookworm']
+    steps:
+        - name: Checkout
+          uses: actions/checkout@v4
+        - name: Setup QEMU
+          uses: docker/setup-qemu-action@v3
+          with:
+            platforms: "arm64,s390x"
+        - name: Setup buildx
+          uses: docker/setup-buildx-action@v3
+        - name: Build container
+          run: |
+            docker compose build --pull --no-cache --build-arg PLATFORM="linux/amd64" --build-arg IMAGE="php" --build-arg TAG="${{ matrix.version }}-${{ matrix.type }}-${{ matrix.distro }}"
+        - name: Test with gcov
+          run: |
+            docker compose run -v "$(pwd)/ext:/ext" --rm shell /bin/sh -c 'pskel test gcov && lcov --capture --directory "/ext" --output-file "/ext/lcov.info" --exclude "Zend/*" --exclude "third_party/*"'
+        - name: Coverage report
+          uses: k1LoW/octocov-action@v1
+          with:
+            config: .github/octocov.yml
