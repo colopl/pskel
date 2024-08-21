@@ -1,4 +1,4 @@
-name: CI
+name: Coverage
 permissions:
   contents: write
 on:
@@ -28,9 +28,8 @@ jobs:
             docker compose build --pull --no-cache --build-arg PLATFORM="linux/amd64" --build-arg IMAGE="php" --build-arg TAG="${{ matrix.version }}-${{ matrix.type }}-${{ matrix.distro }}"
         - name: Test with gcov
           run: |
-            docker compose run -v "$(pwd)/ext:/ext" --rm shell /bin/sh -c "pskel test gcov && cd "ext" && gcovr --exclude Zend/* --exclude third_party/* --xml coverage.xml"
+            docker compose run -v "$(pwd)/ext:/ext" --rm shell /bin/sh -c "pskel test gcov && gcovr /ext --exclude Zend/* --exclude third_party/* --xml /ext/coverage.xml"
         - name: Coverage report
           uses: k1LoW/octocov-action@v1
           with:
             config: .github/octocov.yml
-
