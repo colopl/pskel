@@ -172,5 +172,5 @@ jobs:
               }
             }
 
-            const uncoveredLines = parseLcovInfo('coverage.lcov');
+            const uncoveredLines = parseLcovInfo('lcov.info');
             await createReviewForUncoveredLines(uncoveredLines);
