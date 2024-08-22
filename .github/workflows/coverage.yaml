@@ -146,25 +146,35 @@ jobs:
               const comments = [];
 
               for (const file of files) {
-                const filename = '/' + file.filename;
+                const filename = file.filename;
                 if (uncoveredLines[filename]) {
                   console.log(`Processing file: ${filename}`);
                   const groups = groupConsecutiveLines(uncoveredLines[filename]);
                   for (const group of groups) {
                     const startLine = group[0];
                     const endLine = group[group.length - 1];
-                    console.log(`Commenting on lines ${startLine}-${endLine}`);
-                    const commentBody = `Lines ${startLine}-${endLine} are not covered by tests.`;
-                    const comment = {
-                      path: filename,
-                      body: commentBody,
-                      line: endLine,
-                      side: 'RIGHT',
-                    };
-                    if (startLine !== endLine) {
-                      comment.start_line = startLine;
+                    console.log(`Checking lines ${startLine}-${endLine}`);
+
+                    const patch = file.patch;
+                    const diffLines = getDiffLines(patch);
+
+                    const uncoveredDiffLines = group.filter(line => diffLines.includes(line));
+                    if (uncoveredDiffLines.length > 0) {
+                      const commentStartLine = Math.min(...uncoveredDiffLines);
+                      const commentEndLine = Math.max(...uncoveredDiffLines);
+                      console.log(`Commenting on lines ${commentStartLine}-${commentEndLine}`);
+                      const commentBody = `Lines ${commentStartLine}-${commentEndLine} are not covered by tests.`;
+                      const comment = {
+                        path: filename,
+                        body: commentBody,
+                        line: commentEndLine,
+                        side: 'RIGHT',
+                      };
+                      if (commentStartLine !== commentEndLine) {
+                        comment.start_line = commentStartLine;
+                      }
+                      comments.push(comment);
                     }
-                    comments.push(comment);
                   }
                 }
               }
@@ -192,6 +202,27 @@ jobs:
               } else {
                 console.log('No comments to create');
               }
+            }
+
+            function getDiffLines(patch) {
+              if (!patch) return [];
+              const lines = patch.split('\n');
+              let lineNumber = 0;
+              const diffLines = [];
+              for (const line of lines) {
+                if (line.startsWith('@@')) {
+                  const match = line.match(/@@ -\d+,\d+ \+(\d+),\d+ @@/);
+                  if (match) {
+                    lineNumber = parseInt(match[1]) - 1;
+                  }
+                } else if (!line.startsWith('-')) {
+                  lineNumber++;
+                  if (!line.startsWith('+')) {
+                    diffLines.push(lineNumber);
+                  }
+                }
+              }
+              return diffLines;
             }
 
             const uncoveredLines = parseLcovInfo('lcov.info');
