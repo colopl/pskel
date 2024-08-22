@@ -83,8 +83,8 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const fs = require('fs');
-            const path = require('path');
 
+            // LCOV ファイルを解析してカバーされていない行を取得する関数
             function parseLcovInfo(filename) {
               const content = fs.readFileSync(filename, 'utf8');
               const lines = content.split('\n');
@@ -93,9 +93,9 @@ jobs:
 
               for (const line of lines) {
                 if (line.startsWith('SF:')) {
-                  currentFile = line.substring(3).trim();
+                  currentFile = line.slice(3).trim();
                 } else if (line.startsWith('DA:')) {
-                  const [lineNo, hits] = line.substring(3).trim().split(',').map(Number);
+                  const [lineNo, hits] = line.slice(3).trim().split(',').map(Number);
                   if (hits === 0) {
                     if (!uncoveredLines[currentFile]) {
                       uncoveredLines[currentFile] = [];
@@ -108,10 +108,9 @@ jobs:
               return uncoveredLines;
             }
 
+            // 連続する行をグループ化する関数
             function groupConsecutiveLines(lines) {
-              if (lines.length === 0) {
-                return [];
-              }
+              if (lines.length === 0) return [];
 
               lines.sort((a, b) => a - b);
               const groups = [];
@@ -130,89 +129,61 @@ jobs:
               return groups;
             }
 
-            function parsePatch(patch) {
-              const lines = patch.split('\n');
-              let lineNumber = 0;
-              const changedLines = [];
-
-              for (const line of lines) {
-                if (line.startsWith('@@')) {
-                  const match = line.match(/@@ -\d+(?:,\d+)? \+(\d+)(?:,\d+)? @@/);
-                  if (match) {
-                    lineNumber = parseInt(match[1], 10);
-                  }
-                } else if (line.startsWith('+')) {
-                  changedLines.push(lineNumber);
-                  lineNumber++;
-                } else if (!line.startsWith('-')) {
-                  lineNumber++;
-                }
-              }
-
-              return changedLines;
-            }
-
-            async function createReviewForUncoveredLines(uncoveredLines) {
+            // GitHub API を使用して PR の差分を取得し、カバーされていない行にコメントを追加する関数
+            async function createReviewForUncoveredLines(github, context, uncoveredLines) {
               const { owner, repo } = context.repo;
-              const pull_number = context.issue.number;
+              const pull_number = context.payload.pull_request.number;
 
+              // PR のファイル差分を取得
               const { data: files } = await github.rest.pulls.listFiles({
                 owner,
                 repo,
                 pull_number,
               });
 
+              // レビューコメントを準備
               const comments = [];
-
               for (const file of files) {
-                const filename = '/' + file.filename;
-                const changedLines = parsePatch(file.patch);
-
-                if (uncoveredLines[filename]) {
-                  const groups = groupConsecutiveLines(uncoveredLines[filename]);
+                const filename = file.filename;
+                if (uncoveredLines['/' + filename]) {
+                  const groups = groupConsecutiveLines(uncoveredLines['/' + filename]);
                   for (const group of groups) {
-                    const uncoveredChangedLines = group.filter(line => changedLines.includes(line));
-                    if (uncoveredChangedLines.length > 0) {
-                      const startLine = Math.min(...uncoveredChangedLines);
-                      const endLine = Math.max(...uncoveredChangedLines);
-                      const commentBody = `Lines ${startLine}-${endLine} are not covered by tests.`;
-                      const comment = {
-                        path: filename,
-                        body: commentBody,
-                        line: endLine,
-                        side: 'RIGHT',
-                      };
-                      if (startLine !== endLine) {
-                        comment.start_line = startLine;
-                      }
-                      comments.push(comment);
+                    const startLine = group[0];
+                    const endLine = group[group.length - 1];
+                    const commentBody = 'These lines are not covered by tests.';
+                    const comment = {
+                      path: filename,
+                      body: commentBody,
+                      line: startLine,
+                      side: 'RIGHT',
+                    };
+                    if (startLine !== endLine) {
+                      comment.start_line = startLine;
+                      comment.line = endLine;
                     }
+                    comments.push(comment);
                   }
                 }
               }
 
+              // レビューを作成
               if (comments.length > 0) {
-                try {
-                  await github.rest.pulls.createReview({
-                    owner,
-                    repo,
-                    pull_number,
-                    event: 'COMMENT',
-                    body: 'Review for uncovered lines',
-                    comments,
-                  });
-                  console.log('Review created successfully');
-                } catch (error) {
-                  console.error('Error creating review:', error);
-                  if (error.response) {
-                    console.error('Response status:', error.response.status);
-                    console.error('Response data:', error.response.data);
-                  }
-                }
-              } else {
-                console.log('No comments to create');
+                await github.rest.pulls.createReview({
+                  owner,
+                  repo,
+                  pull_number,
+                  commit_id: context.payload.pull_request.head.sha,
+                  body: 'Review for uncovered lines',
+                  event: 'COMMENT',
+                  comments,
+                });
               }
             }
 
-            const uncoveredLines = parseLcovInfo('lcov.info');
-            await createReviewForUncoveredLines(uncoveredLines);
+            // メイン処理
+            try {
+              const uncoveredLines = parseLcovInfo('lcov.info');
+              await createReviewForUncoveredLines(github, context, uncoveredLines);
+            } catch (error) {
+              core.setFailed(`Action failed with error: ${error}`);
+            }
