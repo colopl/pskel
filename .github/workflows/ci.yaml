@@ -22,7 +22,7 @@ jobs:
         - name: Checkout
           uses: actions/checkout@v4
           with:
-            submodule: true
+            submodules: true
         - name: Setup QEMU
           uses: docker/setup-qemu-action@v3
           with:
