@@ -1,5 +1,29 @@
 #!/bin/sh -e
 
+get_ext_dir() {
+  PSKEL_EXT_DIR="/ext"
+
+  if test -d "${CODESPACE_VSCODE_FOLDER}"; then
+    echo "[Pskel] GitHub Codespace workspace detected, use \"${CODESPACE_VSCODE_FOLDER}/ext\"." >&2
+    PSKEL_EXT_DIR="${CODESPACE_VSCODE_FOLDER}/ext"
+  elif test -d "/workspaces/pskel/ext"; then
+    echo "[Pskel] Development Containers workspace detected, use \"/workspaces/pskel/ext\"." >&2
+    PSKEL_EXT_DIR="/workspaces/pskel/ext"
+  else
+    if test -f "/ext/.gitkeep" && test $(cat "/ext/.gitkeep") = "pskel_uninitialized"; then
+       echo "[Pskel] Uninitialized project detected, initialize default skeleton." >&2
+       cmd_init "skeleton"
+    fi
+  fi
+
+  if test -f "${PSKEL_EXT_DIR}/.gitkeep" && test $(cat "${PSKEL_EXT_DIR}/.gitkeep") = "pskel_uninitialized"; then
+    echo "[Pskel] Project not initialized! Please run \"pskel init\"" >&2
+    exit 1
+  fi
+
+  echo "${PSKEL_EXT_DIR}"
+}
+
 cmd_usage() {
     cat << EOF
 Usage: ${0} [task] ...
@@ -19,16 +43,7 @@ EOF
     return 0
   fi
 
-  PSKEL_EXT_DIR="/ext"
-
-  if test -d "${CODESPACE_VSCODE_FOLDER}"; then
-    echo "[Pskel] GitHub Codespace workspace detected, use \"${CODESPACE_VSCODE_FOLDER}/ext\"." >&2
-    PSKEL_EXT_DIR="${CODESPACE_VSCODE_FOLDER}/ext"
-  elif test -d "/workspaces/pskel/ext"; then
-    echo "[Pskel] Development Containers workspace detected, use \"/workspaces/pskel/ext\"." >&2
-    PSKEL_EXT_DIR="/workspaces/pskel/ext"
-  fi
-
+  PSKEL_EXT_DIR="$(get_ext_dir)"
   /usr/local/bin/php "/usr/src/php/ext/ext_skel.php" --ext "${1}" --dir "/tmp" ${@}
   rm "${PSKEL_EXT_DIR}/.gitkeep"
   rsync -av "/tmp/${1}/" "${PSKEL_EXT_DIR}/"
@@ -91,20 +106,7 @@ EOF
     fi
   done
 
-  PSKEL_EXT_DIR="/ext"
-
-  if test -d "${CODESPACE_VSCODE_FOLDER}"; then
-    echo "[Pskel] GitHub Codespace workspace detected, use \"${CODESPACE_VSCODE_FOLDER}/ext\"." >&2
-    PSKEL_EXT_DIR="${CODESPACE_VSCODE_FOLDER}/ext"
-  elif test -d "/workspaces/pskel/ext"; then
-    echo "[Pskel] Development Containers workspace detected, use \"/workspaces/pskel/ext\"." >&2
-    PSKEL_EXT_DIR="/workspaces/pskel/ext"
-  else
-    if test -f "/ext/.gitkeep" && test $(cat "/ext/.gitkeep") = "pskel_uninitialized"; then
-       echo "[Pskel] Uninitialized project detected, initialize default skeleton." >&2
-       cmd_init "skeleton"
-    fi
-  fi
+  PSKEL_EXT_DIR="$(get_ext_dir)"
 
   cd "${PSKEL_EXT_DIR}"
     "${CMD}ize"
@@ -144,6 +146,15 @@ EOF
   cd -
 }
 
+cmd_coverage() {
+  cmd_test "gcov"
+
+  PSKEL_EXT_DIR="$(get_ext_dir)"
+
+  lcov --capture --directory "${PSKEL_EXT_DIR}" ${LCOV_OPTIONS} --exclude "/usr/local/include/*" --output-file "${PSKEL_EXT_DIR}/lcov.info"
+  lcov --list "${PSKEL_EXT_DIR}/lcov.info"
+}
+
 if [ $# -eq 0 ]; then
   cmd_usage
   exit 1
@@ -154,6 +165,7 @@ case "${1}" in
   init) shift && cmd_init "${@}";;
   test) shift && cmd_test "${@}";;
   build) shift && cmd_build "${@}";;
+  coverage) shift && cmd_coverage "${@}";;
   *)
     echo "${0} error: invalid command: '${1}'" >&2
     cmd_usage

@@ -1,6 +1,6 @@
 ARG PLATFORM=${BUILDPLATFORM:-linux/amd64}
 ARG IMAGE=php
-ARG TAG=8.3-zts-bookworm
+ARG TAG=8.3-cli-bookworm
 
 FROM --platform=${PLATFORM} ${IMAGE}:${TAG}
 
@@ -9,6 +9,7 @@ COPY ./pskel.sh /usr/local/bin/pskel
 ENV USE_ZEND_ALLOC=0
 ENV USE_TRACKED_ALLOC=1
 ENV ZEND_DONT_UNLOAD_MODULES=1
+ENV LC_ALL="C"
 
 RUN docker-php-source extract \
  && if test -f "/etc/debian_version"; then \
