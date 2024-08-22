@@ -26,8 +26,6 @@ jobs:
         uses: actions/checkout@v4
       - name: Setup QEMU
         uses: docker/setup-qemu-action@v3
-        with:
-          platforms: "arm64,s390x"
       - name: Setup buildx
         uses: docker/setup-buildx-action@v3
       - name: Build container
@@ -70,7 +68,7 @@ jobs:
         with:
           name: coverage-unified
           path: ${{ github.workspace }}/lcov.info
-  PullRequestComment:
+  PullRequestReviewForUncoveredLines:
     needs: [Coverage]
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
@@ -132,8 +130,6 @@ jobs:
             async function createReviewForUncoveredLines(uncoveredLines) {
               const { owner, repo } = context.repo;
               const pull_number = context.issue.number;
-              console.log('Uncovered lines:', uncoveredLines);
-              console.log('pull', pull_number);
 
               const { data: files } = await github.rest.pulls.listFiles({
                 owner,
@@ -144,7 +140,7 @@ jobs:
               const comments = [];
 
               for (const file of files) {
-                const filename = file.filename;
+                const filename = '/' + file.filename;
                 if (uncoveredLines[filename]) {
                   const groups = groupConsecutiveLines(uncoveredLines[filename]);
                   for (const group of groups) {
@@ -180,8 +176,3 @@ jobs:
 
             const uncoveredLines = parseLcovInfo('lcov.info');
             await createReviewForUncoveredLines(uncoveredLines);
-      - name: Check workflow permissions
-        run: |
-          curl -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-               -H "Accept: application/vnd.github.v3+json" \
-               https://api.github.com/repos/${{ github.repository }}/actions/permissions
