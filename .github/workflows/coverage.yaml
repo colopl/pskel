@@ -130,6 +130,28 @@ jobs:
               return groups;
             }
 
+            function parsePatch(patch) {
+              const lines = patch.split('\n');
+              let lineNumber = 0;
+              const changedLines = [];
+
+              for (const line of lines) {
+                if (line.startsWith('@@')) {
+                  const match = line.match(/@@ -\d+(?:,\d+)? \+(\d+)(?:,\d+)? @@/);
+                  if (match) {
+                    lineNumber = parseInt(match[1], 10);
+                  }
+                } else if (line.startsWith('+')) {
+                  changedLines.push(lineNumber);
+                  lineNumber++;
+                } else if (!line.startsWith('-')) {
+                  lineNumber++;
+                }
+              }
+
+              return changedLines;
+            }
+
             async function createReviewForUncoveredLines(uncoveredLines) {
               const { owner, repo } = context.repo;
               const pull_number = context.issue.number;
@@ -144,22 +166,27 @@ jobs:
 
               for (const file of files) {
                 const filename = '/' + file.filename;
+                const changedLines = parsePatch(file.patch);
+
                 if (uncoveredLines[filename]) {
                   const groups = groupConsecutiveLines(uncoveredLines[filename]);
                   for (const group of groups) {
-                    const startLine = group[0];
-                    const endLine = group[group.length - 1];
-                    const commentBody = `These lines are not covered by tests.`;
-                    const comment = {
-                      path: filename,
-                      body: commentBody,
-                      line: endLine,
-                      side: 'RIGHT',
-                    };
-                    if (startLine !== endLine) {
-                      comment.start_line = startLine;
+                    const uncoveredChangedLines = group.filter(line => changedLines.includes(line));
+                    if (uncoveredChangedLines.length > 0) {
+                      const startLine = Math.min(...uncoveredChangedLines);
+                      const endLine = Math.max(...uncoveredChangedLines);
+                      const commentBody = `Lines ${startLine}-${endLine} are not covered by tests.`;
+                      const comment = {
+                        path: filename,
+                        body: commentBody,
+                        line: endLine,
+                        side: 'RIGHT',
+                      };
+                      if (startLine !== endLine) {
+                        comment.start_line = startLine;
+                      }
+                      comments.push(comment);
                     }
-                    comments.push(comment);
                   }
                 }
               }
@@ -174,6 +201,7 @@ jobs:
                     body: 'Review for uncovered lines',
                     comments,
                   });
+                  console.log('Review created successfully');
                 } catch (error) {
                   console.error('Error creating review:', error);
                   if (error.response) {
@@ -181,6 +209,8 @@ jobs:
                     console.error('Response data:', error.response.data);
                   }
                 }
+              } else {
+                console.log('No comments to create');
               }
             }
 
