@@ -146,7 +146,7 @@ jobs:
               const comments = [];
 
               for (const file of files) {
-                const filename = file.filename;
+                const filename = '/' + file.filename;
                 if (uncoveredLines[filename]) {
                   console.log(`Processing file: ${filename}`);
                   const groups = groupConsecutiveLines(uncoveredLines[filename]);
