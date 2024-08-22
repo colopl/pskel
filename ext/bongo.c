@@ -43,6 +43,54 @@ PHP_FUNCTION(test2)
 }
 /* }}}*/
 
+/* {{{ void test4() */
+PHP_FUNCTION(test3)
+{
+	ZEND_PARSE_PARAMETERS_NONE();
+
+	php_printf("The extension %s is loaded and working!\r\n", "bongo");
+	php_printf("The extension %s is loaded and working!\r\n", "bongo");
+	php_printf("The extension %s is loaded and working!\r\n", "bongo");
+	php_printf("The extension %s is loaded and working!\r\n", "bongo");
+	php_printf("The extension %s is loaded and working!\r\n", "bongo");
+	php_printf("The extension %s is loaded and working!\r\n", "bongo");
+	php_printf("The extension %s is loaded and working!\r\n", "bongo");
+	php_printf("The extension %s is loaded and working!\r\n", "bongo");
+	php_printf("The extension %s is loaded and working!\r\n", "bongo");
+	php_printf("The extension %s is loaded and working!\r\n", "bongo");
+	php_printf("The extension %s is loaded and working!\r\n", "bongo");
+	php_printf("The extension %s is loaded and working!\r\n", "bongo");
+	php_printf("The extension %s is loaded and working!\r\n", "bongo");
+	php_printf("The extension %s is loaded and working!\r\n", "bongo");
+	php_printf("The extension %s is loaded and working!\r\n", "bongo");
+	php_printf("The extension %s is loaded and working!\r\n", "bongo");
+	php_printf("The extension %s is loaded and working!\r\n", "bongo");
+	php_printf("The extension %s is loaded and working!\r\n", "bongo");
+	php_printf("The extension %s is loaded and working!\r\n", "bongo");
+	php_printf("The extension %s is loaded and working!\r\n", "bongo");
+	php_printf("The extension %s is loaded and working!\r\n", "bongo");
+	php_printf("The extension %s is loaded and working!\r\n", "bongo");
+	php_printf("The extension %s is loaded and working!\r\n", "bongo");
+	php_printf("The extension %s is loaded and working!\r\n", "bongo");
+	php_printf("The extension %s is loaded and working!\r\n", "bongo");
+	php_printf("The extension %s is loaded and working!\r\n", "bongo");
+	php_printf("The extension %s is loaded and working!\r\n", "bongo");
+	php_printf("The extension %s is loaded and working!\r\n", "bongo");
+	php_printf("The extension %s is loaded and working!\r\n", "bongo");
+	php_printf("The extension %s is loaded and working!\r\n", "bongo");
+	php_printf("The extension %s is loaded and working!\r\n", "bongo");
+	php_printf("The extension %s is loaded and working!\r\n", "bongo");
+	php_printf("The extension %s is loaded and working!\r\n", "bongo");
+	php_printf("The extension %s is loaded and working!\r\n", "bongo");
+	php_printf("The extension %s is loaded and working!\r\n", "bongo");
+	php_printf("The extension %s is loaded and working!\r\n", "bongo");
+	php_printf("The extension %s is loaded and working!\r\n", "bongo");
+	php_printf("The extension %s is loaded and working!\r\n", "bongo");
+	php_printf("The extension %s is loaded and working!\r\n", "bongo");
+	php_printf("The extension %s is loaded and working!\r\n", "bongo");
+}
+/* }}} */
+
 /* {{{ PHP_RINIT_FUNCTION */
 PHP_RINIT_FUNCTION(bongo)
 {
