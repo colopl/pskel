@@ -17,5 +17,5 @@
   "mounts": [
     "source=${localWorkspaceFolder},target=/pskel,type=bind,consistency=cached"
   ],
-  "postCreateCommand": "if ! test -e \"/pskel\"; then ln -s \"/workspaces/$(basename $GITHUB_REPOSITORY)\" \"/pskel\"; fi"
+  "onCreateCommand": "if ! test -e \"/pskel\"; then ln -s \"/workspaces/$(basename \"${GITHUB_REPOSITORY})\"\" \"/pskel\"; fi"
 }
