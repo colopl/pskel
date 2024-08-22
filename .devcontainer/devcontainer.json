@@ -12,5 +12,6 @@
     }
   },
   "dockerComposeFile": "./../compose.yaml",
-  "service": "shell"
+  "service": "shell",
+  "workspaceFolder": "/workspaces/pskel"
 }

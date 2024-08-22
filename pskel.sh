@@ -21,9 +21,9 @@ EOF
 
   PSKEL_EXT_DIR="/ext"
 
-  if test -d "/workspace/pskel/ext"; then
-    echo "[Pskel] Development containers workspace detected, use \"/workspace/pskel/ext\"." >&2
-    PSKEL_EXT_DIR="/workspace/pskel/ext"
+  if test -d "/workspaces/pskel/ext"; then
+    echo "[Pskel] Development containers workspace detected, use \"/workspaces/pskel/ext\"." >&2
+    PSKEL_EXT_DIR="/workspaces/pskel/ext"
   fi
 
   /usr/local/bin/php "/usr/src/php/ext/ext_skel.php" --ext "${1}" --dir "/tmp" ${@}
@@ -90,9 +90,9 @@ EOF
 
   PSKEL_EXT_DIR="/ext"
 
-  if test -d "/workspace/pskel/ext"; then
-    echo "[Pskel] Development containers workspace detected, use \"/workspace/pskel/ext\"." >&2
-    PSKEL_EXT_DIR="/workspace/pskel/ext"
+  if test -d "/workspaces/pskel/ext"; then
+    echo "[Pskel] Development containers workspace detected, use \"/workspaces/pskel/ext\"." >&2
+    PSKEL_EXT_DIR="/workspaces/pskel/ext"
   else
     if test -f "/ext/.gitkeep" && test $(cat "/ext/.gitkeep") = "pskel_uninitialized"; then
        echo "[Pskel] Uninitialized project detected, initialize default skeleton." >&2

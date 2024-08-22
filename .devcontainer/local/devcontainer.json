@@ -17,8 +17,8 @@
     {
       "type": "bind",
       "source": "./",
-      "target": "/workspace/pskel"
+      "target": "/workspaces/pskel"
     }
   ],
-  "workspaceFolder": "/workspace/pskel"
+  "workspaceFolder": "/workspaces/pskel"
 }
