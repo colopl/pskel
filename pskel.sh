@@ -12,7 +12,7 @@ get_ext_dir() {
   else
     if test -f "/ext/.gitkeep" && test $(cat "/ext/.gitkeep") = "pskel_uninitialized" && ! test "x${1}" = "x--no-init"; then
        echo "[Pskel] Uninitialized project detected, initialize default skeleton." >&2
-       cmd_init "skeleton"
+       cmd_init "skeleton" >&2
     fi
   fi
 
