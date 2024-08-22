@@ -16,5 +16,6 @@
   "mounts": [
     "source=${localWorkspaceFolder},target=/pskel,type=bind,consistency=cached"
   ],
-  "workspaceFolder": "/pskel"
+  "workspaceFolder": "/pskel",
+  "workspaceMount": "source=${localWorkspaceFolder},target=/pskel,type=bind,consistency=cached"
 }
