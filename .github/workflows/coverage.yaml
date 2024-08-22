@@ -148,15 +148,11 @@ jobs:
               const comments = [];
 
               for (const file of files) {
-                const filename = '/' +  path.normalize(file.filename);
+                const filename = '/' +  file.filename;
                 console.log(`Processing file: ${filename}`);
 
-                const matchingFile = Object.keys(uncoveredLines).find(f =>
-                  path.normalize(f) === filename || filename.endsWith(path.normalize(f))
-                );
-
-                if (matchingFile) {
-                  const groups = groupConsecutiveLines(uncoveredLines[matchingFile]);
+                if (uncoveredLines[filename]) {
+                  const groups = groupConsecutiveLines(uncoveredLines[filename]);
                   for (const group of groups) {
                     const startLine = group[0];
                     const endLine = group[group.length - 1];
