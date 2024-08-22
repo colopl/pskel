@@ -82,7 +82,6 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-          script: |
             const fs = require('fs');
 
             function parseLcovInfo(filename) {
