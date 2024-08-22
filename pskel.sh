@@ -16,11 +16,6 @@ get_ext_dir() {
     fi
   fi
 
-  if test -f "${PSKEL_EXT_DIR}/.gitkeep" && test $(cat "${PSKEL_EXT_DIR}/.gitkeep") = "pskel_uninitialized"; then
-    echo "[Pskel] Project not initialized! Please run \"pskel init\"" >&2
-    exit 1
-  fi
-
   echo "${PSKEL_EXT_DIR}"
 }
 
