@@ -1,5 +1,5 @@
 {
-  "name": "Pskel (for Codespaces)",
+  "name": "Pskel (for Local)",
   "customizations": {
     "vscode": {
       "extensions": [
@@ -12,5 +12,9 @@
     }
   },
   "dockerComposeFile": "./../compose.yaml",
-  "service": "shell"
+  "service": "shell",
+  "workspaceFolder": "/workspaces/pskel",
+  "mounts": [
+    "source=${localWorkspaceFolder},target=/workspaces/pskel,type=bind,consistency=cached"
+  ]
 }

@@ -31,5 +31,3 @@ RUN docker-php-source extract \
 
 COPY ./patches /patches
 COPY ./ext /ext
-
-WORKDIR "/pskel"
