@@ -83,6 +83,7 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const fs = require('fs');
+            const path = require('path');
 
             function parseLcovInfo(filename) {
               console.log(`Parsing LCOV file: ${filename}`);
@@ -94,6 +95,7 @@ jobs:
               for (const line of lines) {
                 if (line.startsWith('SF:')) {
                   currentFile = line.substring(3).trim();
+                  currentFile = path.normalize(currentFile).replace(/^\//, '');
                 } else if (line.startsWith('DA:')) {
                   const [lineNo, hits] = line.substring(3).trim().split(',').map(Number);
                   if (hits === 0) {
@@ -146,10 +148,15 @@ jobs:
               const comments = [];
 
               for (const file of files) {
-                const filename = '/' + file.filename;
-                if (uncoveredLines[filename]) {
-                  console.log(`Processing file: ${filename}`);
-                  const groups = groupConsecutiveLines(uncoveredLines[filename]);
+                const filename = path.normalize(file.filename);
+                console.log(`Processing file: ${filename}`);
+
+                const matchingFile = Object.keys(uncoveredLines).find(f =>
+                  path.normalize(f) === filename || filename.endsWith(path.normalize(f))
+                );
+
+                if (matchingFile) {
+                  const groups = groupConsecutiveLines(uncoveredLines[matchingFile]);
                   for (const group of groups) {
                     const startLine = group[0];
                     const endLine = group[group.length - 1];
@@ -165,7 +172,7 @@ jobs:
                       console.log(`Commenting on lines ${commentStartLine}-${commentEndLine}`);
                       const commentBody = `Lines ${commentStartLine}-${commentEndLine} are not covered by tests.`;
                       const comment = {
-                        path: filename,
+                        path: file.filename,
                         body: commentBody,
                         line: commentEndLine,
                         side: 'RIGHT',
