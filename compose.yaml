@@ -9,11 +9,6 @@ services:
       - seccomp:unconfined
     privileged: true
     tty: true
-    volumes:
-      - type: bind
-        source: .
-        target: /workspaces/pskel
-        consistency: cached
   #   depends_on:
   #     - mysql
   # mysql:

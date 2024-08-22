@@ -13,5 +13,8 @@
   },
   "dockerComposeFile": "./../../compose.yaml",
   "service": "shell",
+  "mounts": [
+    "source=${localWorkspaceFolder},target=/workspaces/pskel,type=bind,consistency=cached"
+  ],
   "workspaceFolder": "/workspaces/pskel"
 }
