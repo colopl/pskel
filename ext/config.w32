@@ -1,0 +1,7 @@
+ARG_ENABLE('conga', 'conga support', 'no');
+
+if (PHP_CONGA != 'no') {
+	AC_DEFINE('HAVE_CONGA', 1, 'conga support enabled');
+
+	EXTENSION('conga', 'conga.c', null, '/DZEND_ENABLE_STATIC_TSRMLS_CACHE=1');
+}
