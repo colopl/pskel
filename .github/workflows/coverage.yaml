@@ -7,6 +7,10 @@ on:
     branches:
       - main
   pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
 jobs:
   Linux:
     runs-on: ubuntu-latest
@@ -20,10 +24,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Setup QEMU
-        uses: docker/setup-qemu-action@v3
-        with:
-          platforms: "arm64,s390x"
       - name: Setup buildx
         uses: docker/setup-buildx-action@v3
       - name: Build container
@@ -61,3 +61,107 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           config: .github/octocov.yml
+      - name: Review for PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const fs = require('fs');
+
+            function parseLcovInfo(filename) {
+              const content = fs.readFileSync(filename, 'utf8');
+              const lines = content.split('\n');
+              const uncoveredLines = {};
+              let currentFile = '';
+
+              for (const line of lines) {
+                if (line.startsWith('SF:')) {
+                  currentFile = line.slice(3).trim();
+                } else if (line.startsWith('DA:')) {
+                  const [lineNo, hits] = line.slice(3).trim().split(',').map(Number);
+                  if (hits === 0) {
+                    if (!uncoveredLines[currentFile]) {
+                      uncoveredLines[currentFile] = [];
+                    }
+                    uncoveredLines[currentFile].push(lineNo);
+                  }
+                }
+              }
+
+              return uncoveredLines;
+            }
+
+            function groupConsecutiveLines(lines) {
+              if (lines.length === 0) return [];
+
+              lines.sort((a, b) => a - b);
+              const groups = [];
+              let currentGroup = [lines[0]];
+
+              for (let i = 1; i < lines.length; i++) {
+                if (lines[i] === lines[i-1] + 1) {
+                  currentGroup.push(lines[i]);
+                } else {
+                  groups.push(currentGroup);
+                  currentGroup = [lines[i]];
+                }
+              }
+              groups.push(currentGroup);
+
+              return groups;
+            }
+
+            async function createReviewForUncoveredLines(github, context, uncoveredLines) {
+              const { owner, repo } = context.repo;
+              const pull_number = context.payload.pull_request.number;
+
+              const { data: files } = await github.rest.pulls.listFiles({
+                owner,
+                repo,
+                pull_number,
+              });
+
+              const comments = [];
+              for (const file of files) {
+                const filename = file.filename;
+                if (uncoveredLines['/' + filename]) {
+                  const groups = groupConsecutiveLines(uncoveredLines['/' + filename]);
+                  for (const group of groups) {
+                    const startLine = group[0];
+                    const endLine = group[group.length - 1];
+                    const commentBody = 'These lines are not covered by tests.';
+                    const comment = {
+                      path: filename,
+                      body: commentBody,
+                      line: startLine,
+                      side: 'RIGHT',
+                    };
+                    if (startLine !== endLine) {
+                      comment.start_line = startLine;
+                      comment.line = endLine;
+                    }
+                    comments.push(comment);
+                  }
+                }
+              }
+
+              if (comments.length > 0) {
+                await github.rest.pulls.createReview({
+                  owner,
+                  repo,
+                  pull_number,
+                  commit_id: context.payload.pull_request.head.sha,
+                  body: 'Review for uncovered lines',
+                  event: 'COMMENT',
+                  comments,
+                });
+              }
+            }
+
+            try {
+              const uncoveredLines = parseLcovInfo('lcov.info');
+              await createReviewForUncoveredLines(github, context, uncoveredLines);
+            } catch (error) {
+              core.setFailed(`Action failed with error: ${error}`);
+            }
