@@ -33,7 +33,7 @@ jobs:
           docker compose build --pull --no-cache --build-arg PLATFORM="linux/amd64" --build-arg IMAGE="php" --build-arg TAG="${{ matrix.version }}-${{ matrix.type }}-${{ matrix.distro }}"
       - name: Test with gcov
         run: |
-          docker compose run -v "$(pwd)/ext:/ext" --rm shell pskel coverage'
+          docker compose run -v "$(pwd)/ext:/ext" --rm shell pskel coverage
       - name: Upload coverage to artifact
         uses: actions/upload-artifact@v4
         with:

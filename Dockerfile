@@ -4,8 +4,6 @@ ARG TAG=8.3-cli-bookworm
 
 FROM --platform=${PLATFORM} ${IMAGE}:${TAG}
 
-COPY ./pskel.sh /usr/local/bin/pskel
-
 ENV USE_ZEND_ALLOC=0
 ENV USE_TRACKED_ALLOC=1
 ENV ZEND_DONT_UNLOAD_MODULES=1
@@ -30,5 +28,6 @@ RUN docker-php-source extract \
         "patch" "lcov" "gzip"; \
     fi
 
+COPY ./pskel.sh /usr/local/bin/pskel
 COPY ./patches /patches
 COPY ./ext /ext
