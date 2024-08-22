@@ -82,9 +82,11 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
+          script: |
             const fs = require('fs');
 
             function parseLcovInfo(filename) {
+              console.log(`Parsing LCOV file: ${filename}`);
               const content = fs.readFileSync(filename, 'utf8');
               const lines = content.split('\n');
               const uncoveredLines = {};
@@ -104,6 +106,7 @@ jobs:
                 }
               }
 
+              console.log('Parsed uncovered lines:', uncoveredLines);
               return uncoveredLines;
             }
 
@@ -131,48 +134,66 @@ jobs:
               const { owner, repo } = context.repo;
               const pull_number = context.issue.number;
 
+              console.log(`Creating review for PR #${pull_number}`);
+
               const { data: files } = await github.rest.pulls.listFiles({
                 owner,
                 repo,
                 pull_number,
               });
 
+              console.log('Files in PR:', files.map(f => f.filename));
+
               const comments = [];
 
               for (const file of files) {
                 const filename = '/' + file.filename;
                 if (uncoveredLines[filename]) {
+                  console.log(`Processing file: ${filename}`);
                   const groups = groupConsecutiveLines(uncoveredLines[filename]);
                   for (const group of groups) {
                     const startLine = group[0];
                     const endLine = group[group.length - 1];
-                    const commentBody = 'These lines are not covered by tests.';
+                    console.log(`Commenting on lines ${startLine}-${endLine}`);
+                    const commentBody = `Lines ${startLine}-${endLine} are not covered by tests.`;
                     const comment = {
                       path: filename,
                       body: commentBody,
-                      line: startLine,
+                      line: endLine,
                       side: 'RIGHT',
                     };
                     if (startLine !== endLine) {
                       comment.start_line = startLine;
-                      comment.line = endLine;
                     }
                     comments.push(comment);
                   }
                 }
               }
 
+              console.log('Comments to be created:', comments);
+
               if (comments.length > 0) {
-                await github.rest.pulls.createReview({
-                  owner,
-                  repo,
-                  pull_number,
-                  event: 'COMMENT',
-                  body: 'Review for uncovered lines',
-                  comments,
-                });
+                try {
+                  const response = await github.rest.pulls.createReview({
+                    owner,
+                    repo,
+                    pull_number,
+                    event: 'COMMENT',
+                    body: 'Review for uncovered lines',
+                    comments,
+                  });
+                  console.log('Review created successfully');
+                } catch (error) {
+                  console.error('Error creating review:', error);
+                  if (error.response) {
+                    console.error('Response status:', error.response.status);
+                    console.error('Response data:', error.response.data);
+                  }
+                }
+              } else {
+                console.log('No comments to create');
               }
             }
 
-            const uncoveredLines = parseLcovInfo('lcov.info');
+            const uncoveredLines = parseLcovInfo('coverage.lcov');
             await createReviewForUncoveredLines(uncoveredLines);
