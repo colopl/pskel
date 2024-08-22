@@ -148,7 +148,7 @@ jobs:
               const comments = [];
 
               for (const file of files) {
-                const filename = path.normalize(file.filename);
+                const filename = '/' +  path.normalize(file.filename);
                 console.log(`Processing file: ${filename}`);
 
                 const matchingFile = Object.keys(uncoveredLines).find(f =>
