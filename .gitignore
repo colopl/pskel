@@ -1,2 +1,5 @@
+/ext/*.dep
+/ext/config.h.in~
+/ext/configure~
 *.DS_Store
 lcov.info
