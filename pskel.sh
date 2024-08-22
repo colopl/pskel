@@ -21,12 +21,12 @@ EOF
 
   PSKEL_EXT_DIR="/ext"
 
-  if test -d "/workspaces/pskel/ext"; then
-    echo "[Pskel] Development Containers workspace detected, use \"/workspaces/pskel/ext\"." >&2
-    PSKEL_EXT_DIR="/workspaces/pskel/ext"
-  elif test -d "${CODESPACE_VSCODE_FOLDER}"; then
+  if test -d "${CODESPACE_VSCODE_FOLDER}"; then
     echo "[Pskel] GitHub Codespace workspace detected, use \"${CODESPACE_VSCODE_FOLDER}/ext\"." >&2
     PSKEL_EXT_DIR="${CODESPACE_VSCODE_FOLDER}/ext"
+  elif test -d "/workspaces/pskel/ext"; then
+    echo "[Pskel] Development Containers workspace detected, use \"/workspaces/pskel/ext\"." >&2
+    PSKEL_EXT_DIR="/workspaces/pskel/ext"
   fi
 
   /usr/local/bin/php "/usr/src/php/ext/ext_skel.php" --ext "${1}" --dir "/tmp" ${@}
@@ -93,12 +93,12 @@ EOF
 
   PSKEL_EXT_DIR="/ext"
 
-  if test -d "/workspaces/pskel/ext"; then
-    echo "[Pskel] Development Containers workspace detected, use \"/workspaces/pskel/ext\"." >&2
-    PSKEL_EXT_DIR="/workspaces/pskel/ext"
-  elif test -d "${CODESPACE_VSCODE_FOLDER}"; then
+  if test -d "${CODESPACE_VSCODE_FOLDER}"; then
     echo "[Pskel] GitHub Codespace workspace detected, use \"${CODESPACE_VSCODE_FOLDER}/ext\"." >&2
     PSKEL_EXT_DIR="${CODESPACE_VSCODE_FOLDER}/ext"
+  elif test -d "/workspaces/pskel/ext"; then
+    echo "[Pskel] Development Containers workspace detected, use \"/workspaces/pskel/ext\"." >&2
+    PSKEL_EXT_DIR="/workspaces/pskel/ext"
   else
     if test -f "/ext/.gitkeep" && test $(cat "/ext/.gitkeep") = "pskel_uninitialized"; then
        echo "[Pskel] Uninitialized project detected, initialize default skeleton." >&2
