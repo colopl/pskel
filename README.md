@@ -86,6 +86,31 @@ A sample MySQL configuration is included in `compose.yaml` (commented out).
 Testing on Windows is possible through GitHub Actions.
 A sample configuration for Windows CI is included in `.github/workflows/ci.yaml` (commented out).
 
+## Code Coverage
+
+### Checking Coverage in Development Environment
+
+You can check the code coverage using lcov with the `pskel` command:
+
+```bash
+$ pskel coverage
+~~~
+Reading tracefile /workspaces/pskel/ext/lcov.info
+            |Lines       |Functions  |Branches
+Filename    |Rate     Num|Rate    Num|Rate     Num
+==================================================
+[/workspaces/pskel/ext/]
+bongo.c     |75.0%     20|80.0%     5|    -      0
+==================================================
+      Total:|75.0%     20|80.0%     5|    -      0
+```
+
+### Checking Coverage in GitHub Actions
+
+You can use [octocov](https://github.com/k1LoW/octocov) to check coverage information in GitHub Actions.
+
+When you create a Pull Request, octocov automatically comments with the coverage information.
+
 ## Frequently Asked Questions
 
 ### Q: Can I use debuggers like gdb or lldb?

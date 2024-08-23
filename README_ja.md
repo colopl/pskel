@@ -89,6 +89,31 @@ MySQL のサンプル設定が `compose.yaml` にコメントアウトされた�
 Windows上でのテストも、 GitHub Actions を通じて実行可能です。
 `.github/workflows/ci.yaml`に Windows CI 用のサンプル設定がコメントアウトされています。
 
+## コードカバレッジ
+
+### 開発環境下での確認
+
+`pskel` コマンドで lcov を利用したカバレッジの確認を行うことができます。
+
+```bash
+$ pskel coverage
+~~~
+Reading tracefile /workspaces/pskel/ext/lcov.info
+            |Lines       |Functions  |Branches
+Filename    |Rate     Num|Rate    Num|Rate     Num
+==================================================
+[/workspaces/pskel/ext/]
+bongo.c     |75.0%     20|80.0%     5|    -      0
+==================================================
+      Total:|75.0%     20|80.0%     5|    -      0
+```
+
+### GitHub Actions での確認
+
+[octocov](https://github.com/k1LoW/octocov) を用いて GitHub Actions でカバレッジ情報を確認することができます。
+
+Pull Request を作成すると自動的に octocov によるカバレッジがコメントされます。
+
 ## よくある質問
 
 ### Q: gdb や lldb などのデバッガは使用できますか？
