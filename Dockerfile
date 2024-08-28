@@ -19,13 +19,15 @@ RUN docker-php-source extract \
         "autoconf" "pkg-config" "make" "gcc" "valgrind" "rsync" "git" "ssh" \
         "clang-20" \
         "lcov" "gzip" \
+        "vim" \
  &&   update-alternatives --install "/usr/bin/clang" clang "/usr/bin/clang-20" 100 \
  &&   update-alternatives --install "/usr/bin/clang++" clang++ "/usr/bin/clang++-20" 100; \
     else \
       apk add --no-cache "bison" "zlib-dev" "sqlite-dev" "libxml2-dev" \
         "autoconf" "pkgconfig" "make" "gcc" "g++" "valgrind" "valgrind-dev" \
         "musl-dev" "rsync" "git" "openssh" \
-        "patch" "lcov" "gzip"; \
+        "patch" "lcov" "gzip" \
+        "vim"; \
     fi
 
 COPY ./pskel.sh /usr/local/bin/pskel
