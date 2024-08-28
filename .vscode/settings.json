@@ -3,5 +3,24 @@
     "*.phpt": "php",
     "*.c": "c",
     "*.h": "c"
+  },
+  "files.exclude": {
+    "**/.git": true,
+    "**/.DS_Store": true,
+    "**/Thumbs.db": true,
+    "**/.libs": true,
+    "**/*.cache": true,
+    "ext/**/*.dep": true,
+    "ext/**/*.la": true,
+    "ext/**/*.lo": true,
+    "ext/build": true,
+    "ext/config.h": true,
+    "ext/config.h.*": true,
+    "ext/config.nice": true,
+    "ext/config.status": true,
+    "ext/configure.ac": true,
+    "ext/configure~": true,
+    "ext/libtool": true,
+    "ext/Makefile.*": true,
   }
 }
