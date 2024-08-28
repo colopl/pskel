@@ -22,5 +22,8 @@
     "ext/configure~": true,
     "ext/libtool": true,
     "ext/Makefile.*": true,
-  }
+  },
+  "markiscodecoverage.enableDecorations": true,
+  "markiscodecoverage.enableOnStartup": true,
+  "markiscodecoverage.searchCriteria": "ext/lcov.info"
 }
