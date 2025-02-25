@@ -20,7 +20,7 @@ RUN docker-php-source extract \
  &&   update-alternatives --install "/usr/bin/clang" clang "/usr/bin/clang-19" 100 \
  &&   update-alternatives --install "/usr/bin/clang++" clang++ "/usr/bin/clang++-19" 100; \
     else \
-      apk add --no-cache "bison" "zlib-dev" "sqlite-dev" "libxml2-dev" \
+      apk add --no-cache "bison" "zlib-dev" "sqlite-dev" "libxml2-dev" "linux-headers" \
         "autoconf" "pkgconfig" "make" "gcc" "g++" "valgrind" "valgrind-dev" \
         "musl-dev" "rsync" "git" "openssh" \
         "patch" "lcov" "gzip" \
