@@ -31,6 +31,7 @@ jobs:
         run: |
           docker compose run --rm shell pskel test
       - name: Test extension with PHP Debug Build
+        if: matrix.distro != 'alpine'
         run: |
           docker compose run --rm shell pskel test debug
       - name: Test extension with Valgrind
