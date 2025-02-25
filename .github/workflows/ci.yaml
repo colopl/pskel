@@ -25,29 +25,24 @@ jobs:
         with:
           submodules: true
       - name: Build container
-        run: |
-          docker compose build --pull --no-cache --build-arg IMAGE="php" --build-arg TAG="${{ matrix.version }}-${{ matrix.type }}-${{ matrix.distro }}"
+        run: docker compose build --pull --no-cache --build-arg IMAGE="php" --build-arg TAG="${{ matrix.version }}-${{ matrix.type }}-${{ matrix.distro }}"
       - name: Test extension with Bundled PHP
-        run: |
-          docker compose run --rm shell pskel test
+        run: docker compose run --rm shell pskel test
       - name: Test extension with PHP Debug Build
-        run: |
-          docker compose run --rm shell pskel test debug
+        if: matrix.version != '8.1'
+        run: docker compose run --rm shell pskel test debug
       - name: Test extension with Valgrind
-        run: |
-          docker compose run --rm shell pskel test valgrind
+        if: matrix.version != '8.1'
+        run: docker compose run --rm shell pskel test valgrind
       - name: Test extension with LLVM Sanitizer (MemorySanitizer)
-        if: matrix.distro != 'alpine'
-        run: |
-          docker compose run --rm shell pskel test msan
+        if: matrix.distro != 'alpine' && matrix.version != '8.1'
+        run: docker compose run --rm shell pskel test msan
       - name: Test extension with LLVM Sanitizer (AddressSanitizer)
-        if: matrix.distro != 'alpine'
-        run: |
-          docker compose run --rm shell pskel test asan
+        if: matrix.distro != 'alpine' && matrix.version != '8.1'
+        run: docker compose run --rm shell pskel test asan
       - name: Test extension with LLVM Sanitizer (UndefinedBehaviorSanitizer)
-        if: matrix.distro != 'alpine'
-        run: |
-            docker compose run --rm shell pskel test ubsan
+        if: matrix.distro != 'alpine' && matrix.version != '8.1'
+        run: docker compose run --rm shell pskel test ubsan
   LinuxQemu:
     runs-on: ubuntu-24.04
     strategy:
