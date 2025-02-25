@@ -18,7 +18,7 @@ jobs:
         version: ['8.1', '8.2', '8.3', '8.4']
         type: ['cli', 'zts']
         distro: ['bookworm', 'alpine']
-    runs-on: ubuntu-24.04
+    runs-on: ${{ matrix.runs-on }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -27,9 +27,9 @@ jobs:
       - name: Build container
         run: |
           docker compose build --pull --no-cache --build-arg IMAGE="php" --build-arg TAG="${{ matrix.version }}-${{ matrix.type }}-${{ matrix.distro }}"
-              - name: Test extension with Bundled PHP
-          run: |
-            docker compose run --rm shell pskel test
+      - name: Test extension with Bundled PHP
+        run: |
+          docker compose run --rm shell pskel test
       - name: Test extension with PHP Debug Build
         run: |
           docker compose run --rm shell pskel test debug
