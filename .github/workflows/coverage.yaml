@@ -18,7 +18,7 @@ jobs:
         runs-on: ['ubuntu-24.04', 'ubuntu-24.04-arm']
         version: ['8.4']
         type: ['cli', 'zts']
-        distro: ['bookworm']
+        distro: ['trixie']
     runs-on: ${{ matrix.runs-on }}
     steps:
       - name: Checkout

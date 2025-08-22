@@ -28,7 +28,6 @@ It provides a comprehensive toolkit that covers everything from setting up the d
 - Memory leak checks
 - Sanitizer inspections
 - Code coverage analysis
-- Testing on Windows environments
 
 ### ☁️ Cloud Development Environment
 - Support for [GitHub Codespaces](https://docs.github.com/en/codespaces)
@@ -80,11 +79,6 @@ $ pskel test ubsan    # Check using LLVM UndefinedBehaviorSanitizer
 
 You can integrate external services into your development environment by editing the `compose.yaml` file.
 A sample MySQL configuration is included in `compose.yaml` (commented out).
-
-### Testing on Windows Environment
-
-Testing on Windows is possible through GitHub Actions.
-A sample configuration for Windows CI is included in `.github/workflows/ci.yaml` (commented out).
 
 ## Code Coverage
 
