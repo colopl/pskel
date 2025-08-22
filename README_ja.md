@@ -30,7 +30,6 @@ Pskelは、PHP拡張機能の開発を迅速かつ効率的に行うためのス
 - メモリリークチェック
 - LLVM Sanitizer による検査
 - コードカバレッジ分析
-- Windows 環境でのテスト
 
 ### ☁️ クラウド開発環境
 - [GitHub Codespaces](https://docs.github.com/en/codespaces)のサポート
@@ -83,11 +82,6 @@ $ pskel test ubsan    # LLVM UndefinedBehaviorSanitizerによるチェック
 `compose.yaml` を編集することで、開発環境に外部サービスを統合できます。
 
 MySQL のサンプル設定が `compose.yaml` にコメントアウトされた状態で含まれています。
-
-### Windows 環境でのテスト
-
-Windows上でのテストも、 GitHub Actions を通じて実行可能です。
-`.github/workflows/ci.yaml`に Windows CI 用のサンプル設定がコメントアウトされています。
 
 ## コードカバレッジ
 
