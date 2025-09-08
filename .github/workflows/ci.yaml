@@ -110,7 +110,7 @@ jobs:
             else
               mkdir -p "php-cache"
             fi
-            docker compose build --no-cache --build-arg PLATFORM="${{ matrix.platform }}" --build-arg IMAGE="php" --build-arg TAG="${{ matrix.version }}-${{ matrix.type }}-${{ matrix.distro }}"
+            docker compose build --pull --no-cache --build-arg PLATFORM="${{ matrix.platform }}" --build-arg IMAGE="php" --build-arg TAG="${{ matrix.version }}-${{ matrix.type }}-${{ matrix.distro }}"
         - name: Test extension with Bundled PHP
           run: |
             docker compose run --rm -v "$(pwd)/php-cache:/opt/php-cache" -e PHP_CACHE_DIR="/opt/php-cache" -e GITHUB_ACTIONS=true -e CONTAINER_IMAGE_HASH="${{ steps.pull-image.outputs.image_hash }}" shell pskel test
