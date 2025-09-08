@@ -28,3 +28,35 @@ RUN docker-php-source extract \
 COPY ./pskel.sh /usr/local/bin/pskel
 COPY ./patches /patches
 COPY ./ext /ext
+
+RUN chmod +x /usr/local/bin/pskel
+
+RUN cat <<'EOF' > /usr/local/bin/docker-entrypoint.sh
+#!/bin/sh
+set -e
+
+if test -n "${GITHUB_ACTIONS}" && test -d "${PHP_CACHE_DIR}"; then
+  echo "[Cache] GitHub Actions environment detected, checking for cached binaries..." >&2
+  for cache_entry in "${PHP_CACHE_DIR}"/*; do
+    if test -f "${cache_entry}/.build_complete"; then
+      for bin in "${cache_entry}/usr/local/bin/"*; do
+        if test -f "${bin}"; then
+          bin_name="$(basename "${bin}")"
+          ln -sf "${bin}" "/usr/local/bin/${bin_name}"
+          echo "[Cache] Restored: ${bin_name}" >&2
+        fi
+      done
+      if test -d "${cache_entry}/usr/local/include"; then
+        cp -an "${cache_entry}/usr/local/include/"* "/usr/local/include/" 2>/dev/null || true
+      fi
+    fi
+  done
+fi
+
+exec "$@"
+EOF
+
+RUN chmod +x "/usr/local/bin/docker-entrypoint.sh"
+
+ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
+CMD ["bash"]
