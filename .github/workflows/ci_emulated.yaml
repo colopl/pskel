@@ -38,7 +38,7 @@ jobs:
             docker pull --platform "${{ matrix.platform }}" "php:${{ matrix.version }}-${{ matrix.type }}-${{ matrix.distro }}"
         - name: Cut arch name
           id: cut-arch
-          run: echo "arch=$(${{ matrix.platform }} | sed 's|linux/||')" >> $GITHUB_OUTPUT
+          run: echo "arch=$(echo "${{ matrix.platform }}" | sed 's|linux/||')" >> $GITHUB_OUTPUT
         - name: Build and cache container
           uses: docker/build-push-action@263435318d21b8e681c14492fe198d362a7d2c83 # v6.18.0
           env:
@@ -52,7 +52,7 @@ jobs:
               TAG=${{ steps.cut-arch.outputs.arch }}-${{ matrix.version }}-${{ matrix.type }}-${{ matrix.distro }}
             tags: |
               shell
-              ghcr.io/${{ steps.cut-arch.outcome.arch }}-${{ github.repository }}/ci-emulated:${{ matrix.version }}-${{ matrix.type }}-${{ matrix.distro }}-${{ hashFiles('**/Dockerfile', '**/compose.yaml', '**/pskel.sh') }}
+              ghcr.io/${{ github.repository }}/ci-emulated:${{ steps.cut-arch.outputs.arch }}-${{ matrix.version }}-${{ matrix.type }}-${{ matrix.distro }}-${{ hashFiles('**/Dockerfile', '**/compose.yaml', '**/pskel.sh') }}
             cache-from: |
               type=registry,ref=ghcr.io/${{ github.repository }}/ci-emulated:buildcache-${{ steps.cut-arch.outputs.arch }}-${{ matrix.version }}-${{ matrix.type }}-${{ matrix.distro }}
             cache-to: |
