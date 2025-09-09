@@ -38,6 +38,8 @@ jobs:
             docker pull --platform "${{ matrix.platform }}" "php:${{ matrix.version }}-${{ matrix.type }}-${{ matrix.distro }}"
         - name: Build and cache container
           uses: docker/build-push-action@263435318d21b8e681c14492fe198d362a7d2c83 # v6.18.0
+          env:
+            DOCKER_BUILD_SUMMARY: false
           with:
             context: .
             platforms: ${{ matrix.platform }}
@@ -53,7 +55,5 @@ jobs:
               type=registry,ref=ghcr.io/${{ github.repository }}/ci-emulated:buildcache-${{ matrix.version }}-${{ matrix.type }}-${{ matrix.distro }},mode=max
             push: false
             load: true
-            provenance: false
-            sbom: false
         - name: Test extension with Bundled PHP
           run: docker compose run --rm shell pskel test
