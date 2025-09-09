@@ -12,7 +12,7 @@ jobs:
       - name: Check if initialization is needed
         id: check
         run: |
-          if test -f "ext/.gitkeep" && test "$(cat ext/.gitkeep)" = "pskel_uninitialized"; then
+          if test -f "ext/.gitkeep" && test "$(cat "ext/.gitkeep")" = "pskel_uninitialized"; then
             echo "needs-init=true" >> $GITHUB_OUTPUT
           else
             echo "needs-init=false" >> $GITHUB_OUTPUT
@@ -34,12 +34,13 @@ jobs:
     strategy:
       matrix:
         runs-on:
-          - macos-13        # amd64
-          # - macos-13-xlarge # arm64
-          # - macos-14-large  # amd64
-          - macos-14        # arm64
-          # - macos-15-large  # amd64
-          - macos-15        # arm64
+          - macos-13            # amd64
+          - macos-14            # arm64
+          - macos-15            # arm64
+          # paid runners:
+            # - macos-13-xlarge # arm64
+            # - macos-14-large  # amd64
+            # - macos-15-large  # amd64
         version: ['8.1', '8.2', '8.3', '8.4']
         ts: ['ts', 'nts']
     steps:
@@ -62,7 +63,7 @@ jobs:
         run: |
           cd "ext"
             phpize
-            ./configure --with-php-config="$(which php-config)"
+            ./configure --with-php-config="$(which "php-config")"
             make -j"$(sysctl -n hw.ncpu)"
             make test
           cd -
