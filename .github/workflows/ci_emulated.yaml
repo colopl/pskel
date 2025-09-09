@@ -22,12 +22,45 @@ jobs:
             cache-image: false
         - name: Setup buildx
           uses: docker/setup-buildx-action@v3
+        - name: Setup Docker layer caching
+          uses: docker/setup-buildx-action@v3
+          with:
+            driver-opts: |
+              image=moby/buildkit:latest
+            buildkitd-flags: --debug
+        - name: Login to GitHub Container Registry
+          if: github.event_name != 'pull_request'
+          uses: docker/login-action@v3
+          with:
+            registry: ghcr.io
+            username: ${{ github.actor }}
+            password: ${{ secrets.GITHUB_TOKEN }}
         - name: Pull PHP container image
           run: |
             docker pull --platform "${{ matrix.platform }}" "php:${{ matrix.version }}-${{ matrix.type }}-${{ matrix.distro }}"
-        - name: Build container
-          run: |
-            docker compose build --pull --no-cache --build-arg PLATFORM="${{ matrix.platform }}" --build-arg IMAGE="php" --build-arg TAG="${{ matrix.version }}-${{ matrix.type }}-${{ matrix.distro }}"
+        - name: Build and cache container
+          uses: docker/build-push-action@v6
+          with:
+            context: .
+            platforms: ${{ matrix.platform }}
+            build-args: |
+              PLATFORM=${{ matrix.platform }}
+              IMAGE=php
+              TAG=${{ matrix.version }}-${{ matrix.type }}-${{ matrix.distro }}
+            tags: |
+              ghcr.io/${{ github.repository }}/ci-emulated:${{ matrix.version }}-${{ matrix.type }}-${{ matrix.distro }}-${{ hashFiles('**/Dockerfile', '**/compose.yaml', '**/pskel.sh') }}
+            cache-from: |
+              type=registry,ref=ghcr.io/${{ github.repository }}/ci-emulated:buildcache-${{ matrix.version }}-${{ matrix.type }}-${{ matrix.distro }}
+            cache-to: |
+              type=registry,ref=ghcr.io/${{ github.repository }}/ci-emulated:buildcache-${{ matrix.version }}-${{ matrix.type }}-${{ matrix.distro }},mode=max
+            push: false
+            load: true
         - name: Test extension with Bundled PHP
           run: |
-            docker compose run --rm shell pskel test
+            CONTAINER_TAG="ghcr.io/${{ github.repository }}/ci-emulated:${{ matrix.version }}-${{ matrix.type }}-${{ matrix.distro }}-${{ hashFiles('**/Dockerfile', '**/compose.yaml', '**/pskel.sh') }}"
+            docker run --rm \
+              --platform "${{ matrix.platform }}" \
+              -v "${PWD}:/ext:ro" \
+              -w /ext \
+              "${CONTAINER_TAG}" \
+              pskel test
