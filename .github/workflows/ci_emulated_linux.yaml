@@ -1,4 +1,4 @@
-name: CI Emulated
+name: CI Emulated Linux
 on:
   workflow_call:
 jobs:
