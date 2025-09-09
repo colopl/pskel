@@ -20,12 +20,12 @@ jobs:
         run: |
           docker pull "php:${{ matrix.version }}-${{ matrix.type }}-${{ matrix.distro }}"
           IMAGE_HASH="$(docker inspect "php:${{ matrix.version }}-${{ matrix.type }}-${{ matrix.distro }}" --format '{{.Id}}' | cut -d: -f2)"
-          echo "image_hash=${IMAGE_HASH:0:16}" >> "$GITHUB_OUTPUT"
+          echo "image_hash=${IMAGE_HASH:0:16}" >> "${GITHUB_OUTPUT}"
       - name: Generate cache key
         id: cache-key
         run: |
           ARCH="$(uname -m)"
-          echo "key=php-bins-${{ matrix.version }}-${{ matrix.type }}-${{ matrix.distro }}-${ARCH}-${{ steps.pull-image.outputs.image_hash }}" >> "$GITHUB_OUTPUT"
+          echo "key=php-bins-${{ matrix.version }}-${{ matrix.type }}-${{ matrix.distro }}-${ARCH}-${{ steps.pull-image.outputs.image_hash }}" >> "${GITHUB_OUTPUT}"
       - name: Cache PHP binaries
         uses: actions/cache@v4
         with:
