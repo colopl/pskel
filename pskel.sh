@@ -180,7 +180,7 @@ check_and_restore_cached_php() {
       ln -sf "${CACHE_DIR}/usr/local/include/${PREFIX}-php" "/usr/local/include/${PREFIX}-php"
     fi
 
-    echo "[Cache] Restored PHP header and binary: ${PREFIX}-php" >&2
+    echo "[Pskel > Cache] Restored PHP header and binary: ${PREFIX}-php" >&2
 
     return 0
   fi
@@ -229,7 +229,7 @@ cache_php_build() {
   fi
 
   touch "${CACHE_DIR}/.build_complete"
-  echo "[Cache] Cached PHP header and binary: ${PREFIX}-php" >&2
+  echo "[Pskel > Cache] Cached PHP header and binary: ${PREFIX}-php" >&2
 }
 
 cmd_build() {

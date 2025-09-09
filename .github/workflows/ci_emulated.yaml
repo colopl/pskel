@@ -1,0 +1,33 @@
+name: CI Emulated
+on:
+  workflow_call:
+jobs:
+  LinuxQemu:
+    runs-on: ubuntu-24.04
+    strategy:
+      matrix:
+        platform: ['linux/s390x']
+        version: ['8.1', '8.2', '8.3', '8.4']
+        type: ['cli', 'zts']
+        distro: ['trixie', 'alpine']
+    steps:
+        - name: Checkout
+          uses: actions/checkout@v5
+          with:
+            submodules: true
+        - name: Setup QEMU
+          uses: docker/setup-qemu-action@v3
+          with:
+            platforms: "s390x"
+            cache-image: false
+        - name: Setup buildx
+          uses: docker/setup-buildx-action@v3
+        - name: Pull PHP container image
+          run: |
+            docker pull --platform "${{ matrix.platform }}" "php:${{ matrix.version }}-${{ matrix.type }}-${{ matrix.distro }}"
+        - name: Build container
+          run: |
+            docker compose build --pull --no-cache --build-arg PLATFORM="${{ matrix.platform }}" --build-arg IMAGE="php" --build-arg TAG="${{ matrix.version }}-${{ matrix.type }}-${{ matrix.distro }}"
+        - name: Test extension with Bundled PHP
+          run: |
+            docker compose run --rm shell pskel test
