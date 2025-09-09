@@ -1,0 +1,35 @@
+name: CI macOS
+on:
+  workflow_call:
+jobs:
+  macOS:
+    runs-on: ${{ matrix.runs-on }}
+    strategy:
+      matrix:
+        runs-on:
+          - macos-13        # amd64
+          - macos-13-xlarge # arm64
+          - macos-14-large  # amd64
+          - macos-14        # arm64
+          - macos-15-large  # amd64
+          - macos-15        # arm64
+        version: ['8.1', '8.2', '8.3', '8.4']
+        ts: ['ts', 'nts']
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+      - name: Setup PHP
+        uses: shivammathur/setup-php@vec406be512d7077f68eed36e63f4d91bc006edc4 # v2.35.4
+        with:
+          php-version: ${{ matrix.version }}
+          extensions: none
+        env:
+          phpts: ${{ matrix.ts }}
+      - name: Test extension
+        run: |
+          cd "ext"
+            phpize
+            ./configure --with-php-config="$(which php-config)"
+            make -j"$(sysctl -n hw.ncpu)"
+            make test
+          cd -

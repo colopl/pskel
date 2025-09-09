@@ -14,3 +14,5 @@ jobs:
     uses: ./.github/workflows/ci_native.yaml
   emulated:
     uses: ./.github/workflows/ci_emulated.yaml
+  macos:
+    uses: ./.github/workflows/ci_macos.yaml
