@@ -49,7 +49,7 @@ jobs:
             build-args: |
               PLATFORM=${{ matrix.platform }}
               IMAGE=php
-              TAG=${{ steps.cut-arch.outputs.arch }}-${{ matrix.version }}-${{ matrix.type }}-${{ matrix.distro }}
+              TAG=${{ matrix.version }}-${{ matrix.type }}-${{ matrix.distro }}
             tags: |
               shell
               ghcr.io/${{ github.repository }}/ci-emulated:${{ steps.cut-arch.outputs.arch }}-${{ matrix.version }}-${{ matrix.type }}-${{ matrix.distro }}-${{ hashFiles('**/Dockerfile', '**/compose.yaml', '**/pskel.sh') }}
