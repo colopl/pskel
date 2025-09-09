@@ -54,11 +54,4 @@ jobs:
             push: false
             load: true
         - name: Test extension with Bundled PHP
-          run: |
-            CONTAINER_TAG="ghcr.io/${{ github.repository }}/ci-emulated:${{ matrix.version }}-${{ matrix.type }}-${{ matrix.distro }}-${{ hashFiles('**/Dockerfile', '**/compose.yaml', '**/pskel.sh') }}"
-            docker run --rm \
-              --platform "${{ matrix.platform }}" \
-              -v "${PWD}:/ext:ro" \
-              -w /ext \
-              "${CONTAINER_TAG}" \
-              pskel test
+          run: docker compose run --rm shell pskel test
