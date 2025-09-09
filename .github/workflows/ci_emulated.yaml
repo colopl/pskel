@@ -46,13 +46,14 @@ jobs:
             build-args: |
               PLATFORM=${{ matrix.platform }}
               IMAGE=php
-              TAG=${{ matrix.version }}-${{ matrix.type }}-${{ matrix.distro }}
+              TAG=${{ matrix.platform }}-${{ matrix.version }}-${{ matrix.type }}-${{ matrix.distro }}
             tags: |
-              ghcr.io/${{ github.repository }}/ci-emulated:${{ matrix.version }}-${{ matrix.type }}-${{ matrix.distro }}-${{ hashFiles('**/Dockerfile', '**/compose.yaml', '**/pskel.sh') }}
+              shell
+              ghcr.io/${{ matrix.platform }}-${{ github.repository }}/ci-emulated:${{ matrix.version }}-${{ matrix.type }}-${{ matrix.distro }}-${{ hashFiles('**/Dockerfile', '**/compose.yaml', '**/pskel.sh') }}
             cache-from: |
-              type=registry,ref=ghcr.io/${{ github.repository }}/ci-emulated:buildcache-${{ matrix.version }}-${{ matrix.type }}-${{ matrix.distro }}
+              type=registry,ref=ghcr.io/${{ github.repository }}/ci-emulated:buildcache-${{ matrix.platform }}-${{ matrix.version }}-${{ matrix.type }}-${{ matrix.distro }}
             cache-to: |
-              type=registry,ref=ghcr.io/${{ github.repository }}/ci-emulated:buildcache-${{ matrix.version }}-${{ matrix.type }}-${{ matrix.distro }},mode=max
+              type=registry,ref=ghcr.io/${{ github.repository }}/ci-emulated:buildcache-${{ matrix.platform }}-${{ matrix.version }}-${{ matrix.type }}-${{ matrix.distro }},mode=max
             push: false
             load: true
         - name: Test extension with Bundled PHP
