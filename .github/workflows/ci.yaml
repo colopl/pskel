@@ -10,7 +10,7 @@ permissions:
   packages: write
   pull-requests: write
 jobs:
-  native:
-    uses: ./.github/workflows/ci_native.yaml
+  # native:
+  #   uses: ./.github/workflows/ci_native.yaml
   emulated:
     uses: ./.github/workflows/ci_emulated.yaml
