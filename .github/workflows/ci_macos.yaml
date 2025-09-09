@@ -8,10 +8,10 @@ jobs:
       matrix:
         runs-on:
           - macos-13        # amd64
-          - macos-13-xlarge # arm64
-          - macos-14-large  # amd64
+          # - macos-13-xlarge # arm64
+          # - macos-14-large  # amd64
           - macos-14        # arm64
-          - macos-15-large  # amd64
+          # - macos-15-large  # amd64
           - macos-15        # arm64
         version: ['8.1', '8.2', '8.3', '8.4']
         ts: ['ts', 'nts']
