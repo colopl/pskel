@@ -59,7 +59,7 @@ jobs:
           run: |
             docker compose build \
               --build-arg PLATFORM="${{ matrix.platform }}" \
-              --build-arg TAG="${{ steps.cut-arch.outputs.arch }}-${{ matrix.version }}-${{ matrix.type }}-${{ matrix.distro }}" \
+              --build-arg TAG="${{ matrix.version }}-${{ matrix.type }}-${{ matrix.distro }}" \
               shell
             docker tag shell "${{ steps.image-tag.outputs.tag }}"
         - name: Push image to GitHub Container Registry
