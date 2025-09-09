@@ -2,7 +2,34 @@ name: CI macOS
 on:
   workflow_call:
 jobs:
+  init:
+    runs-on: ubuntu-24.04
+    outputs:
+      needs-init: ${{ steps.check.outputs.needs-init }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+      - name: Check if initialization is needed
+        id: check
+        run: |
+          if test -f "ext/.gitkeep" && test "$(cat ext/.gitkeep)" = "pskel_uninitialized"; then
+            echo "needs-init=true" >> $GITHUB_OUTPUT
+          else
+            echo "needs-init=false" >> $GITHUB_OUTPUT
+          fi
+      - name: Initialize extension
+        if: steps.check.outputs.needs-init == 'true'
+        run: |
+          docker compose run -v"$(pwd)/ext:/ext" --rm shell pskel init example
+      - name: Upload initialized extension
+        if: steps.check.outputs.needs-init == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: initialized-ext
+          path: ext/
+          retention-days: 1
   macOS:
+    needs: init
     runs-on: ${{ matrix.runs-on }}
     strategy:
       matrix:
@@ -18,6 +45,12 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v5
+      - name: Download initialized extension
+        if: needs.init.outputs.needs-init == 'true'
+        uses: actions/download-artifact@v4
+        with:
+          name: initialized-ext
+          path: ext/
       - name: Setup PHP
         uses: shivammathur/setup-php@ec406be512d7077f68eed36e63f4d91bc006edc4 # v2.35.4
         with:
