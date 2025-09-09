@@ -66,8 +66,8 @@ jobs:
       - name: Test extension
         run: |
           cd "ext"
-            phpize
-            ./configure --with-php-config="$(which "php-config")"
-            make -j"$(sysctl -n hw.ncpu)"
-            make test
+          phpize
+          ./configure --with-php-config="$(which "php-config")"
+          make -j"$(sysctl -n hw.ncpu)"
+          make test
           cd -
