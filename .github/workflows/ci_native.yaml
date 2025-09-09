@@ -2,7 +2,7 @@ name: CI Native
 on:
   workflow_call:
 jobs:
-  LinuxNative:
+  Linux:
     strategy:
       matrix:
         runs-on: ['ubuntu-24.04', 'ubuntu-24.04-arm']

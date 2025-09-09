@@ -2,7 +2,7 @@ name: CI Emulated
 on:
   workflow_call:
 jobs:
-  LinuxQemu:
+  Linux:
     runs-on: ubuntu-24.04
     strategy:
       matrix:
