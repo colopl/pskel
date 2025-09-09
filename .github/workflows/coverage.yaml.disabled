@@ -1,0 +1,85 @@
+name: Coverage
+permissions:
+  contents: write
+  pull-requests: write
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+jobs:
+  Linux:
+    strategy:
+      matrix:
+        runs-on: ['ubuntu-24.04', 'ubuntu-24.04-arm']
+        version: ['8.4']
+        type: ['cli', 'zts']
+        distro: ['trixie']
+    runs-on: ${{ matrix.runs-on }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          submodules: true
+      - name: Setup buildx
+        uses: docker/setup-buildx-action@e468171a9de216ec08956ac3ada2f0791b6bd435 # v3.11.1
+      - name: Build container
+        run: |
+          docker compose build --pull --no-cache --build-arg IMAGE="php" --build-arg TAG="${{ matrix.version }}-${{ matrix.type }}-${{ matrix.distro }}"
+      - name: Test with gcov
+        run: |
+          docker compose run -v "$(pwd)/ext:/ext" --rm shell pskel coverage
+      - name: Upload coverage to artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-${{ matrix.runs-on }}-${{ matrix.version }}-${{ matrix.type }}-${{ matrix.distro }}
+          path: ${{ github.workspace }}/ext/lcov.info
+  Coverage:
+    needs: [Linux]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          submodules: true
+      - name: Download coverage artifacts
+        uses: actions/download-artifact@v5
+        with:
+          path: coverage-artifacts
+      - name: Install lcov
+        run: sudo apt-get install -y lcov
+      - name: Merge coverages
+        run: |
+          LCOV_FILES=$(find coverage-artifacts -name "lcov.info" -type f)
+          
+          if [ -z "$LCOV_FILES" ]; then
+            echo "No lcov.info files found in the artifacts!"
+            exit 1
+          fi
+          
+          CMD="lcov"
+          CMD+=" --ignore-errors format"
+          for LCOV_FILE in $LCOV_FILES; do
+            echo "Adding coverage file: $LCOV_FILE"
+            CMD+=" -a $LCOV_FILE"
+          done
+          CMD+=" -o lcov.info"
+          
+          echo "Executing: $CMD"
+          eval $CMD
+          
+          if [ ! -f "lcov.info" ]; then
+            echo "Failed to generate merged lcov.info file!"
+            exit 1
+          fi
+          
+          echo "Successfully merged $(echo $LCOV_FILES | wc -w) coverage files."
+      - name: Report coverage
+        uses: k1LoW/octocov-action@73d561f65d59e66899ed5c87e4621a913b5d5c20 # v1.5.0
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          config: .github/octocov.yml

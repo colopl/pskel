@@ -19,6 +19,11 @@ jobs:
           else
             echo "needs-init=false" >> $GITHUB_OUTPUT
           fi
+      - name: Checkout
+        if: steps.check.outputs.needs-init == 'true'
+        uses: actions/checkout@v5
+        with:
+          submodules: true
       - name: Initialize extension
         if: steps.check.outputs.needs-init == 'true'
         run: |
