@@ -53,5 +53,7 @@ jobs:
               type=registry,ref=ghcr.io/${{ github.repository }}/ci-emulated:buildcache-${{ matrix.version }}-${{ matrix.type }}-${{ matrix.distro }},mode=max
             push: false
             load: true
+            provenance: false
+            sbom: false
         - name: Test extension with Bundled PHP
           run: docker compose run --rm shell pskel test
