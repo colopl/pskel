@@ -36,14 +36,14 @@ RUN cat <<'EOF' > /usr/local/bin/docker-entrypoint.sh
 set -e
 
 if test -n "${GITHUB_ACTIONS}" && test -d "${PHP_CACHE_DIR}"; then
-  echo "[Cache] GitHub Actions environment detected, checking for cached binaries..." >&2
+  echo "[Pskel > Cache] GitHub Actions environment detected, checking for cached binaries..." >&2
   for cache_entry in "${PHP_CACHE_DIR}"/*; do
     if test -f "${cache_entry}/.build_complete"; then
       for bin in "${cache_entry}/usr/local/bin/"*; do
         if test -f "${bin}"; then
           bin_name="$(basename "${bin}")"
           ln -sf "${bin}" "/usr/local/bin/${bin_name}"
-          echo "[Cache] Restored: ${bin_name}" >&2
+          echo "[Pskel > Cache] Restored: ${bin_name}" >&2
         fi
       done
       if test -d "${cache_entry}/usr/local/include"; then

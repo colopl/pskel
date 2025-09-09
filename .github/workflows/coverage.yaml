@@ -26,7 +26,7 @@ jobs:
         with:
           submodules: true
       - name: Setup buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@e468171a9de216ec08956ac3ada2f0791b6bd435 # v3.11.1
       - name: Build container
         run: |
           docker compose build --pull --no-cache --build-arg IMAGE="php" --build-arg TAG="${{ matrix.version }}-${{ matrix.type }}-${{ matrix.distro }}"
@@ -77,7 +77,7 @@ jobs:
           
           echo "Successfully merged $(echo $LCOV_FILES | wc -w) coverage files."
       - name: Report coverage
-        uses: k1LoW/octocov-action@v1
+        uses: k1LoW/octocov-action@73d561f65d59e66899ed5c87e4621a913b5d5c20 # v1.5.0
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           config: .github/octocov.yml
