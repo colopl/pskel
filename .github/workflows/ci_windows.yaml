@@ -50,7 +50,7 @@ jobs:
         if: needs.init.outputs.needs-init == 'true'
         uses: actions/download-artifact@v4
         with:
-          name: initialized-ext
+          name: initialized-ext-windows
           path: ext\
       - name: Extract extension name
         id: ext-name
