@@ -27,7 +27,7 @@ jobs:
         if: steps.check.outputs.needs-init == 'true'
         uses: actions/upload-artifact@v4
         with:
-          name: initialized-ext
+          name: initialized-ext-windows
           path: ext/
           retention-days: 1
   Windows:
