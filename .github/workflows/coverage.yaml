@@ -44,6 +44,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v5
+        with:
+          submodules: true
       - name: Download coverage artifacts
         uses: actions/download-artifact@v5
         with:

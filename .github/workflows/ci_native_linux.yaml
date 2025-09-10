@@ -1,4 +1,4 @@
-name: CI Native
+name: CI Native Linux
 on:
   workflow_call:
 jobs:
