@@ -71,13 +71,15 @@ jobs:
         with:
           arch: ${{ matrix.arch }}
           toolset: ${{ steps.setup-php.outputs.toolset }}
-      - name: phpize
-        run: phpize
-      - name: configure
-        run: configure --enable-${{ steps.ext-name.outputs.name }} --with-prefix=${{ steps.setup-php.outputs.prefix }}
-      - name: make
-        run: nmake
-      - name: test
+      - name: phpize and configure
+        run: |
+          cd "ext"
+          phpize
+          configure --enable-${{ steps.ext-name.outputs.name }} --with-prefix=${{ steps.setup-php.outputs.prefix }}
+      - name: Build and Test
         env:
           TEST_PHP_ARGS: '-q --show-diff'
-        run: nmake test
+        run: |
+          cd "ext"
+          nmake
+          nmake test
