@@ -75,8 +75,7 @@ jobs:
         run: |
           cd "ext"
           phpize
-          dir
-          configure --enable-${{ steps.ext-name.outputs.name }} --with-prefix=${{ steps.setup-php.outputs.prefix }}
+          ./configure.bat --enable-${{ steps.ext-name.outputs.name }} --with-prefix=${{ steps.setup-php.outputs.prefix }}
       - name: Build and Test
         env:
           TEST_PHP_ARGS: '-q --show-diff'
