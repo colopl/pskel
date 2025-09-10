@@ -16,3 +16,5 @@ jobs:
     uses: ./.github/workflows/ci_emulated_linux.yaml
   macOS:
     uses: ./.github/workflows/ci_macos.yaml
+  Windows:
+    uses: ./.github/workflows/ci_windows.yaml
