@@ -52,6 +52,12 @@ jobs:
         with:
           name: initialized-ext
           path: ext\
+      - name: Extract extension name
+        id: ext-name
+        shell: pwsh
+        run: |
+          $name = (Get-Content .\ext\config.w32 | Select-String "EXTENSION\('([^']+)'" | ForEach-Object { $_.Matches[0].Groups[1].Value })
+          echo "name=$name" >> $env:GITHUB_OUTPUT
       - name: Setup PHP
         id: setup-php
         uses: php/setup-php-sdk@aeb631f88f71bbf027937e7f7b1553e1d394c99e # v0.10
@@ -65,12 +71,6 @@ jobs:
         with:
           arch: ${{ matrix.arch }}
           toolset: ${{ steps.setup-php.outputs.toolset }}
-      - name: Extract extension name
-        id: ext-name
-        shell: pwsh
-        run: |
-          $name = (Get-Content .\ext\config.w32 | Select-String "EXTENSION\('([^']+)'" | ForEach-Object { $_.Matches[0].Groups[1].Value })
-          echo "name=$name" >> $env:GITHUB_OUTPUT
       - name: phpize
         run: phpize
       - name: configure
