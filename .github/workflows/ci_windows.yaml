@@ -75,7 +75,7 @@ jobs:
         run: |
           cd "ext"
           phpize
-          ls
+          dir
           configure --enable-${{ steps.ext-name.outputs.name }} --with-prefix=${{ steps.setup-php.outputs.prefix }}
       - name: Build and Test
         env:
