@@ -34,7 +34,7 @@ jobs:
       - name: Initialize extension
         if: steps.check.outputs.needs-init == 'true'
         run: |
-          docker compose run -v"$(pwd)/ext:/ext" --rm shell pskel init skeleton
+          docker compose run -v "$(pwd)/ext:/ext" --rm shell pskel init skeleton
       - name: Upload initialized extension
         if: steps.check.outputs.needs-init == 'true'
         uses: actions/upload-artifact@v4
