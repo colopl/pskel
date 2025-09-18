@@ -15,7 +15,7 @@ Pskelは、PHP拡張機能の開発を迅速かつ効率的に行うためのス
 ### 🚀 迅速な環境セットアップ
 - [Development Containers](https://containers.dev/)と[Visual Studio Code](https://code.visualstudio.com/)の活用
 - 必要な拡張機能の自動インストール
-- C/C++開発環境の簡易構成
+- C/C++ 開発環境の簡易構成
 
 ### 🛠 高度なデバッグ・解析ツール
 - Valgrind と LLVM Sanitizer のサポート
@@ -30,6 +30,10 @@ Pskelは、PHP拡張機能の開発を迅速かつ効率的に行うためのス
 - メモリリークチェック
 - LLVM Sanitizer による検査
 - コードカバレッジ分析
+- 各種 OS におけるテストに対応
+    - Linux
+    - macOS
+    - Windows
 
 ### ☁️ クラウド開発環境
 - [GitHub Codespaces](https://docs.github.com/en/codespaces)のサポート
@@ -107,6 +111,10 @@ bongo.c     |75.0%     20|80.0%     5|    -      0
 [octocov](https://github.com/k1LoW/octocov) を用いて GitHub Actions でカバレッジ情報を確認することができます。
 
 Pull Request を作成すると自動的に octocov によるカバレッジがコメントされます。
+
+### GitHub Pages での確認
+
+リポジトリの GitHub Pages を有効にし、 Actions による deploy を有効にすることで `lcov` および `genhtml` コマンドによって生成されたコードカバレッジを GitHub Pages で閲覧できるようになります。
 
 ## よくある質問
 
