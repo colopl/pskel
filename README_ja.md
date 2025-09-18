@@ -45,12 +45,12 @@ Pskelは、PHP拡張機能の開発を迅速かつ効率的に行うためのス
 
 1. [Visual Studio Code](https://code.visualstudio.com/) をインストール
 2. Docker / Docker Compose 互換ランタイムをインストール
-3. `zeriyoshi/pskel` をテンプレートとしてリポジトリを作成
+3. `colopl/pskel` をテンプレートとしてリポジトリを作成
 4. ローカルにクローンして VSCode で開き、開発コンテナーで起動
 
 ### GitHub Codespaces での開発準備
 
-1. `zeriyoshi/pskel` をテンプレートとしてリポジトリを作成
+1. `colopl/pskel` をテンプレートとしてリポジトリを作成
 2. WebUI 上の `<> Code` -> `Codespaces` から新規 Codespace を作成
 
 ### スケルトンの作成

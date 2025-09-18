@@ -45,12 +45,12 @@ It provides a comprehensive toolkit that covers everything from setting up the d
 
 1. Install [Visual Studio Code](https://code.visualstudio.com/)
 2. Install Docker / Docker Compose compatible runtime
-3. Create a repository using `zeriyoshi/pskel` as a template
+3. Create a repository using `colopl/pskel` as a template
 4. Clone locally, open in VSCode, and select "Open in Container"
 
 ### Preparing for Development in GitHub Codespaces
 
-1. Create a repository using `zeriyoshi/pskel` as a template
+1. Create a repository using `colopl/pskel` as a template
 2. Create a new Codespace from the WebUI under `<> Code` -> `Codespaces`
 
 ### Creating the Skeleton
