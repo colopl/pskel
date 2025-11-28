@@ -20,7 +20,7 @@
       "versioning": "regex:^VALGRIND_(?<major>\\d+)_(?<minor>\\d+)_(?<patch>\\d+)$"
     },
     {
-      "description": "Disable digest udates for git submodules",
+      "description": "Disable digest updates for git submodules",
       "matchManagers": [
         "git-submodules"
       ],
