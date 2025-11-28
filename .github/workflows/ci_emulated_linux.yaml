@@ -5,16 +5,18 @@ jobs:
   Linux:
     runs-on: ubuntu-24.04
     strategy:
+      max-parallel: 2
       matrix:
         platform: ['linux/s390x']
-        version: ['8.1', '8.2', '8.3', '8.4']
+        version: ['8.1', '8.2', '8.3', '8.4', '8.5']
         type: ['cli', 'zts']
         distro: ['trixie', 'alpine']
     steps:
         - name: Checkout
-          uses: actions/checkout@v5
+          uses: actions/checkout@v6
           with:
             submodules: true
+            fetch-depth: 1
         - name: Setup QEMU
           uses: docker/setup-qemu-action@29109295f81e9208d7d86ff1c6c12d2833863392 # v3.6.0
           with:
@@ -60,6 +62,7 @@ jobs:
             docker compose build \
               --build-arg PLATFORM="${{ matrix.platform }}" \
               --build-arg TAG="${{ matrix.version }}-${{ matrix.type }}-${{ matrix.distro }}" \
+              --build-arg SKIP_VALGRIND=1 \
               shell
             docker tag shell "${{ steps.image-tag.outputs.tag }}"
         - name: Push image to GitHub Container Registry

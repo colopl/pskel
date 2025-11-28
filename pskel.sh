@@ -45,11 +45,21 @@ EOF
       ;;
   esac
 
+  mkdir -p "/tmp/pskel_extension_tmp"
+  if test "$(/usr/local/bin/php -r 'echo PHP_VERSION_ID;')" -lt "80500"; then
+    /usr/local/bin/php "/usr/src/php/ext/ext_skel.php" --ext "${1}" --dir "/tmp/pskel_extension_tmp" "${@}"
+  else
+    if test -z "${2}"; then
+      EXT_VENDOR="pskel"
+    else
+      EXT_VENDOR="${2}"
+    fi
+    /usr/local/bin/php "/usr/src/php/ext/ext_skel.php" --vendor "${EXT_VENDOR}" --ext "${1}" --dir "/tmp/pskel_extension_tmp" "${@}"
+  fi
   PSKEL_EXT_DIR="$(get_ext_dir --no-init)"
-  /usr/local/bin/php "/usr/src/php/ext/ext_skel.php" --ext "${1}" --dir "/tmp" "${@}"
-  rm "${PSKEL_EXT_DIR}/.gitkeep"
-  rsync -av "/tmp/${1}/" "${PSKEL_EXT_DIR}/"
-  rm -rf "/tmp/${1}"
+  rm -rf "/tmp/pskel_extension_tmp/${1}/.gitkeep"
+  rsync -av "/tmp/pskel_extension_tmp/${1}/" "${PSKEL_EXT_DIR}/"
+  rm -rf "${PSKEL_EXT_DIR}/.gitkeep"
 }
 
 cmd_test() {
