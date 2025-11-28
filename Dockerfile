@@ -1,6 +1,7 @@
 ARG PLATFORM=${BUILDPLATFORM:-linux/amd64}
 ARG IMAGE=php
 ARG TAG=8.5-cli-alpine
+ARG SKIP_VALGRIND=0
 
 FROM --platform=${PLATFORM} ${IMAGE}:${TAG}
 
@@ -47,21 +48,24 @@ RUN docker-php-source extract \
     fi
 
 COPY ./third_party/valgrind "/third_party/valgrind"
-RUN cd "/third_party/valgrind" && \
-      if test -f "/etc/debian_version"; then \
-        apt-get update && \
-        DEBIAN_FRONTEND="noninteractive" apt-get install -y \
-          "build-essential" "autotools-dev" "automake" "autoconf" "libtool" \
-          "libc6-dev" "linux-libc-dev" \
-          "libxml2-dev"; \
-      else \
-        apk add --no-cache "build-base" "automake" "autoconf" "perl" "linux-headers"; \
-      fi && \
-      ./autogen.sh && \
-      ./configure && \
-      make -j"$(nproc)" && \
-      make install && \
-    cd -
+ARG SKIP_VALGRIND
+RUN if test "${SKIP_VALGRIND}" != "1"; then \
+      cd "/third_party/valgrind" && \
+        if test -f "/etc/debian_version"; then \
+          apt-get update && \
+          DEBIAN_FRONTEND="noninteractive" apt-get install -y \
+            "build-essential" "autotools-dev" "automake" "autoconf" "libtool" \
+            "libc6-dev" "linux-libc-dev" \
+            "libxml2-dev"; \
+        else \
+          apk add --no-cache "build-base" "automake" "autoconf" "perl" "linux-headers"; \
+        fi && \
+        ./autogen.sh && \
+        ./configure && \
+        make -j"$(nproc)" && \
+        make install && \
+      cd -; \
+    fi
 
 COPY ./pskel.sh "/usr/local/bin/pskel"
 COPY ./patches "/patches"
