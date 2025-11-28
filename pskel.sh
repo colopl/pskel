@@ -57,6 +57,7 @@ EOF
     /usr/local/bin/php "/usr/src/php/ext/ext_skel.php" --vendor "${EXT_VENDOR}" --ext "${1}" --dir "/tmp/pskel_extension_tmp" "${@}"
   fi
   PSKEL_EXT_DIR="$(get_ext_dir --no-init)"
+  rm -rf "/tmp/pskel_extension_tmp/${1}/.gitkeep"
   rsync -av "/tmp/pskel_extension_tmp/${1}/" "${PSKEL_EXT_DIR}/"
   rm -rf "${PSKEL_EXT_DIR}/.gitkeep"
 }
