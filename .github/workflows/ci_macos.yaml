@@ -8,9 +8,10 @@ jobs:
       needs-init: ${{ steps.check.outputs.needs-init }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           submodules: true
+          fetch-depth: 1
       - name: Check if initialization is needed
         id: check
         run: |
@@ -34,6 +35,7 @@ jobs:
     needs: init
     runs-on: ${{ matrix.runs-on }}
     strategy:
+      max-parallel: 2
       matrix:
         runs-on:
           - macos-13            # amd64
@@ -43,11 +45,11 @@ jobs:
             # - macos-13-xlarge # arm64
             # - macos-14-large  # amd64
             # - macos-15-large  # amd64
-        version: ['8.1', '8.2', '8.3', '8.4']
+        version: ['8.1', '8.2', '8.3', '8.4', '8.5']
         ts: ['ts', 'nts']
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           submodules: true
       - name: Download initialized extension

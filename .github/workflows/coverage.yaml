@@ -20,9 +20,10 @@ jobs:
       needs-init: ${{ steps.check.outputs.needs-init }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           submodules: true
+          fetch-depth: 1
       - name: Check if initialization is needed
         id: check
         run: |
@@ -47,14 +48,15 @@ jobs:
     runs-on: ${{ matrix.platform }}
     strategy:
       matrix:
-        versions: ['8.4']
+        versions: ['8.5']
         platform: ['ubuntu-24.04', 'ubuntu-24.04-arm']
         ts: ['cli', 'zts']
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           submodules: true
+          fetch-depth: 1
       - name: Download initialized extension
         if: needs.init.outputs.needs-init == 'true'
         uses: actions/download-artifact@v6
@@ -88,7 +90,7 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
       - name: Install lcov
         run: |
           sudo apt-get update
