@@ -155,7 +155,7 @@ jobs:
           sudo chmod -R +r "/ext"
           genhtml --output-directory "coverage-html" --title "Coverage Report" "lcov.info"
       - name: Run octocov
-        uses: k1LoW/octocov-action@73d561f65d59e66899ed5c87e4621a913b5d5c20
+        uses: k1LoW/octocov-action@73d561f65d59e66899ed5c87e4621a913b5d5c20 # v1.5.0
         with:
           config: .github/octocov.yml
       - name: Setup Pages

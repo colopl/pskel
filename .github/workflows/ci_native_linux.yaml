@@ -12,11 +12,9 @@ on:
       archive_name:
         required: true
         type: string
-
 jobs:
   Linux:
     strategy:
-      max-parallel: 2
       matrix:
         runs-on: ['ubuntu-24.04', 'ubuntu-24.04-arm']
         version: ['8.1', '8.2', '8.3', '8.4', '8.5']

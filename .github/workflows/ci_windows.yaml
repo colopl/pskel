@@ -52,7 +52,6 @@ jobs:
     needs: init
     runs-on: ${{ matrix.runs-on }}
     strategy:
-      max-parallel: 2
       matrix:
         runs-on:
           - windows-2022
