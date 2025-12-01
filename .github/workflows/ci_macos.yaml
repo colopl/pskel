@@ -12,7 +12,7 @@ jobs:
       needs-init: ${{ steps.check.outputs.needs-init }}
     steps:
       - name: Download prepared workspace
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@v4
         with:
           name: ${{ inputs.source-artifact-name }}
           path: .
@@ -49,13 +49,13 @@ jobs:
         ts: ['ts', 'nts']
     steps:
       - name: Download prepared workspace
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@v4
         with:
           name: ${{ inputs.source-artifact-name }}
           path: .
       - name: Download initialized extension
         if: needs.init.outputs.needs-init == 'true'
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@v4
         with:
           name: initialized-ext-macos
           path: ext/
