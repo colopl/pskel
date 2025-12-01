@@ -5,25 +5,35 @@ permissions:
   pages: write
   id-token: write
 on:
-  push:
-    branches:
-      - main
-  pull_request:
-    types:
-      - opened
-      - synchronize
-      - reopened
+  workflow_call:
+    inputs:
+      artifact_name:
+        required: true
+        type: string
+      artifact_run_id:
+        required: true
+        type: string
+      archive_name:
+        required: true
+        type: string
 jobs:
   init:
     runs-on: ubuntu-24.04
     outputs:
       needs-init: ${{ steps.check.outputs.needs-init }}
     steps:
-      - name: Checkout
-        uses: actions/checkout@v6
+      - name: Download prepared workspace
+        uses: actions/download-artifact@v6
         with:
-          submodules: true
-          fetch-depth: 1
+          name: ${{ inputs.artifact_name }}
+          path: ${{ runner.temp }}/source-archive
+      - name: Extract prepared workspace
+        env:
+          ARCHIVE_NAME: ${{ inputs.archive_name }}
+        run: |
+          ARCHIVE_PATH="${RUNNER_TEMP}/source-archive/${ARCHIVE_NAME}"
+          tar -xzf "${ARCHIVE_PATH}" --strip-components=1 -C "${GITHUB_WORKSPACE}"
+          rm -f "${ARCHIVE_PATH}"
       - name: Check if initialization is needed
         id: check
         run: |
@@ -52,11 +62,18 @@ jobs:
         platform: ['ubuntu-24.04', 'ubuntu-24.04-arm']
         ts: ['cli', 'zts']
     steps:
-      - name: Checkout
-        uses: actions/checkout@v6
+      - name: Download prepared workspace
+        uses: actions/download-artifact@v6
         with:
-          submodules: true
-          fetch-depth: 1
+          name: ${{ inputs.artifact_name }}
+          path: ${{ runner.temp }}/source-archive
+      - name: Extract prepared workspace
+        env:
+          ARCHIVE_NAME: ${{ inputs.archive_name }}
+        run: |
+          ARCHIVE_PATH="${RUNNER_TEMP}/source-archive/${ARCHIVE_NAME}"
+          tar -xzf "${ARCHIVE_PATH}" --strip-components=1 -C "${GITHUB_WORKSPACE}"
+          rm -f "${ARCHIVE_PATH}"
       - name: Download initialized extension
         if: needs.init.outputs.needs-init == 'true'
         uses: actions/download-artifact@v6
@@ -89,8 +106,18 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - name: Checkout
-        uses: actions/checkout@v6
+      - name: Download prepared workspace
+        uses: actions/download-artifact@v6
+        with:
+          name: ${{ inputs.artifact_name }}
+          path: ${{ runner.temp }}/source-archive
+      - name: Extract prepared workspace
+        env:
+          ARCHIVE_NAME: ${{ inputs.archive_name }}
+        run: |
+          ARCHIVE_PATH="${RUNNER_TEMP}/source-archive/${ARCHIVE_NAME}"
+          tar -xzf "${ARCHIVE_PATH}" --strip-components=1 -C "${GITHUB_WORKSPACE}"
+          rm -f "${ARCHIVE_PATH}"
       - name: Install lcov
         run: |
           sudo apt-get update
