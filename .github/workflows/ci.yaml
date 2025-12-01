@@ -9,7 +9,6 @@ concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref_name || github.run_id }}
   cancel-in-progress: true
 permissions:
-  actions: read
   contents: write
   packages: write
   pull-requests: write
