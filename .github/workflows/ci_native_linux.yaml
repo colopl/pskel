@@ -1,6 +1,15 @@
 name: CI Native Linux
+
 on:
   workflow_call:
+    inputs:
+      source-artifact-name:
+        required: true
+        type: string
+      source-artifact-run-id:
+        required: true
+        type: string
+
 jobs:
   Linux:
     strategy:
@@ -12,11 +21,14 @@ jobs:
         distro: ['trixie', 'alpine']
     runs-on: ${{ matrix.runs-on }}
     steps:
-      - name: Checkout
-        uses: actions/checkout@v6
+      - name: Download prepared workspace
+        uses: actions/download-artifact@v6
         with:
-          submodules: true
-          fetch-depth: 1
+          name: ${{ inputs.source-artifact-name }}
+          path: .
+          run-id: ${{ inputs.source-artifact-run-id }}
+          repository: ${{ github.repository }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Pull PHP container image
         id: pull-image
         run: |

@@ -1,0 +1,35 @@
+name: CI Prepare
+
+on:
+  workflow_call:
+    outputs:
+      source-artifact-name:
+        description: Name of the prepared workspace artifact
+        value: ${{ jobs.prepare.outputs.source-artifact-name }}
+      source-artifact-run-id:
+        description: Run ID that stores the workspace artifact
+        value: ${{ jobs.prepare.outputs.source-artifact-run-id }}
+
+jobs:
+  prepare:
+    runs-on: ubuntu-24.04
+    outputs:
+      source-artifact-name: ${{ steps.metadata.outputs.source-artifact-name }}
+      source-artifact-run-id: ${{ steps.metadata.outputs.source-artifact-run-id }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+          submodules: recursive
+      - name: Record artifact metadata
+        id: metadata
+        run: |
+          echo "source-artifact-name=repo-source-${GITHUB_RUN_ID}" >> "${GITHUB_OUTPUT}"
+          echo "source-artifact-run-id=${GITHUB_RUN_ID}" >> "${GITHUB_OUTPUT}"
+      - name: Upload prepared workspace
+        uses: actions/upload-artifact@v5
+        with:
+          name: ${{ steps.metadata.outputs.source-artifact-name }}
+          path: .
+          retention-days: 1

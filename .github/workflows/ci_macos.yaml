@@ -1,17 +1,27 @@
 name: CI macOS
 on:
   workflow_call:
+    inputs:
+      source-artifact-name:
+        required: true
+        type: string
+      source-artifact-run-id:
+        required: true
+        type: string
 jobs:
   init:
     runs-on: ubuntu-24.04
     outputs:
       needs-init: ${{ steps.check.outputs.needs-init }}
     steps:
-      - name: Checkout
-        uses: actions/checkout@v6
+      - name: Download prepared workspace
+        uses: actions/download-artifact@v6
         with:
-          submodules: true
-          fetch-depth: 1
+          name: ${{ inputs.source-artifact-name }}
+          path: .
+          run-id: ${{ inputs.source-artifact-run-id }}
+          repository: ${{ github.repository }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Check if initialization is needed
         id: check
         run: |
@@ -44,10 +54,14 @@ jobs:
         version: ['8.1', '8.2', '8.3', '8.4', '8.5']
         ts: ['ts', 'nts']
     steps:
-      - name: Checkout
-        uses: actions/checkout@v6
+      - name: Download prepared workspace
+        uses: actions/download-artifact@v6
         with:
-          submodules: true
+          name: ${{ inputs.source-artifact-name }}
+          path: .
+          run-id: ${{ inputs.source-artifact-run-id }}
+          repository: ${{ github.repository }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Download initialized extension
         if: needs.init.outputs.needs-init == 'true'
         uses: actions/download-artifact@v6
