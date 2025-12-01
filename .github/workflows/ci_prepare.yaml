@@ -28,7 +28,7 @@ jobs:
           echo "source-artifact-name=repo-source-${GITHUB_RUN_ID}" >> "${GITHUB_OUTPUT}"
           echo "source-artifact-run-id=${GITHUB_RUN_ID}" >> "${GITHUB_OUTPUT}"
       - name: Upload prepared workspace
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: ${{ steps.metadata.outputs.source-artifact-name }}
           path: .
