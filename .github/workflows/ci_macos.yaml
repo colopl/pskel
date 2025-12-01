@@ -18,12 +18,8 @@ jobs:
           path: .
       - name: Extract artifact and cleanup
         run: |
-          for zip in *.zip; do
-            if test -f "$zip"; then
-              unzip -o "$zip"
-              rm -f "$zip"
-            fi
-          done
+          bsdtar -xvf "${{ inputs.source-artifact-name }}.zip" --strip-components=1
+          rm -f "${{ inputs.source-artifact-name }}.zip"
       - name: Check if initialization is needed
         id: check
         run: |
@@ -63,12 +59,8 @@ jobs:
           path: .
       - name: Extract artifact and cleanup
         run: |
-          for zip in *.zip; do
-            if test -f "$zip"; then
-              unzip -o "$zip"
-              rm -f "$zip"
-            fi
-          done
+          bsdtar -xvf "${{ inputs.source-artifact-name }}.zip" --strip-components=1
+          rm -f "${{ inputs.source-artifact-name }}.zip"
       - name: Download initialized extension
         if: needs.init.outputs.needs-init == 'true'
         uses: actions/download-artifact@v5
@@ -79,12 +71,8 @@ jobs:
         if: needs.init.outputs.needs-init == 'true'
         run: |
           cd ext
-          for zip in *.zip; do
-            if test -f "$zip"; then
-              unzip -o "$zip"
-              rm -f "$zip"
-            fi
-          done
+          bsdtar -xvf "initialized-ext-macos.zip" --strip-components=1
+          rm -f "initialized-ext-macos.zip"
       - name: Setup PHP
         uses: shivammathur/setup-php@44454db4f0199b8b9685a5d763dc37cbf79108e1 # v2.36.0
         with:

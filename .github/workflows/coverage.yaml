@@ -67,12 +67,8 @@ jobs:
         if: needs.init.outputs.needs-init == 'true'
         run: |
           cd ext
-          for zip in *.zip; do
-            if test -f "$zip"; then
-              unzip -o "$zip"
-              rm -f "$zip"
-            fi
-          done
+          bsdtar -xvf "initialized-ext-coverage.zip" --strip-components=1
+          rm -f "initialized-ext-coverage.zip"
       - name: Install lcov
         run: |
           sudo apt-get update
@@ -116,7 +112,7 @@ jobs:
           cd coverage-files
           for zip in *.zip; do
             if test -f "$zip"; then
-              unzip -o "$zip"
+              bsdtar -xvf "$zip" --strip-components=1
               rm -f "$zip"
             fi
           done
@@ -144,12 +140,8 @@ jobs:
         if: needs.init.outputs.needs-init == 'true'
         run: |
           cd ext
-          for zip in *.zip; do
-            if test -f "$zip"; then
-              unzip -o "$zip"
-              rm -f "$zip"
-            fi
-          done
+          bsdtar -xvf "initialized-ext-coverage.zip" --strip-components=1
+          rm -f "initialized-ext-coverage.zip"
       - name: Generate HTML coverage report
         run: |
           mkdir -p "coverage-html"

@@ -18,12 +18,8 @@ jobs:
           path: .
       - name: Extract artifact and cleanup
         run: |
-          for zip in *.zip; do
-            if test -f "$zip"; then
-              unzip -o "$zip"
-              rm -f "$zip"
-            fi
-          done
+          bsdtar -xvf "${{ inputs.source-artifact-name }}.zip" --strip-components=1
+          rm -f "${{ inputs.source-artifact-name }}.zip"
       - name: Check if initialization is needed
         id: check
         run: |
@@ -62,12 +58,10 @@ jobs:
           name: ${{ inputs.source-artifact-name }}
           path: .
       - name: Extract artifact and cleanup
-        shell: pwsh
+        shell: bash
         run: |
-          Get-ChildItem -Filter *.zip | ForEach-Object {
-            Expand-Archive -Path $_.FullName -DestinationPath . -Force
-            Remove-Item $_.FullName
-          }
+          bsdtar -xvf "${{ inputs.source-artifact-name }}.zip" --strip-components=1
+          rm -f "${{ inputs.source-artifact-name }}.zip"
       - name: Download initialized extension
         if: needs.init.outputs.needs-init == 'true'
         uses: actions/download-artifact@v5
@@ -76,12 +70,11 @@ jobs:
           path: ext\
       - name: Extract extension artifact and cleanup
         if: needs.init.outputs.needs-init == 'true'
-        shell: pwsh
+        shell: bash
         run: |
-          Get-ChildItem -Path ext -Filter *.zip | ForEach-Object {
-            Expand-Archive -Path $_.FullName -DestinationPath ext -Force
-            Remove-Item $_.FullName
-          }
+          cd ext
+          bsdtar -xvf "initialized-ext-windows.zip" --strip-components=1
+          rm -f "initialized-ext-windows.zip"
       - name: Extract extension name
         id: ext-name
         shell: pwsh

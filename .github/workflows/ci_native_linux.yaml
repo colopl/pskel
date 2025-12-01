@@ -25,12 +25,8 @@ jobs:
           path: .
       - name: Extract artifact and cleanup
         run: |
-          for zip in *.zip; do
-            if test -f "$zip"; then
-              unzip -o "$zip"
-              rm -f "$zip"
-            fi
-          done
+          bsdtar -xvf "${{ inputs.source-artifact-name }}.zip" --strip-components=1
+          rm -f "${{ inputs.source-artifact-name }}.zip"
       - name: Pull PHP container image
         id: pull-image
         run: |
