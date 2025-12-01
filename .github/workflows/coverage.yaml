@@ -63,12 +63,6 @@ jobs:
         with:
           name: initialized-ext-coverage
           path: ext/
-      - name: Extract extension artifact and cleanup
-        if: needs.init.outputs.needs-init == 'true'
-        run: |
-          cd ext
-          tar -xvf "initialized-ext-coverage.zip" --strip-components=1
-          rm -f "initialized-ext-coverage.zip"
       - name: Install lcov
         run: |
           sudo apt-get update
@@ -107,15 +101,6 @@ jobs:
           pattern: coverage-*
           merge-multiple: true
           path: coverage-files/
-      - name: Extract coverage artifacts and cleanup
-        run: |
-          cd coverage-files
-          for zip in *.zip; do
-            if test -f "$zip"; then
-              tar -xvf "$zip" --strip-components=1
-              rm -f "$zip"
-            fi
-          done
       - name: Merge coverage files
         run: |
           COVERAGE_FILES=$(find "coverage-files/" -name "*_lcov.info" -type f)
@@ -136,12 +121,6 @@ jobs:
         with:
           name: initialized-ext-coverage
           path: ext/
-      - name: Extract extension artifact and cleanup
-        if: needs.init.outputs.needs-init == 'true'
-        run: |
-          cd ext
-          tar -xvf "initialized-ext-coverage.zip" --strip-components=1
-          rm -f "initialized-ext-coverage.zip"
       - name: Generate HTML coverage report
         run: |
           mkdir -p "coverage-html"

@@ -16,10 +16,6 @@ jobs:
         with:
           name: ${{ inputs.source-artifact-name }}
           path: .
-      - name: Extract artifact and cleanup
-        run: |
-          tar -xvf "${{ inputs.source-artifact-name }}.zip" --strip-components=1
-          rm -f "${{ inputs.source-artifact-name }}.zip"
       - name: Check if initialization is needed
         id: check
         run: |
@@ -57,22 +53,12 @@ jobs:
         with:
           name: ${{ inputs.source-artifact-name }}
           path: .
-      - name: Extract artifact and cleanup
-        run: |
-          tar -xvf "${{ inputs.source-artifact-name }}.zip" --strip-components=1
-          rm -f "${{ inputs.source-artifact-name }}.zip"
       - name: Download initialized extension
         if: needs.init.outputs.needs-init == 'true'
         uses: actions/download-artifact@v5
         with:
           name: initialized-ext-macos
           path: ext/
-      - name: Extract extension artifact and cleanup
-        if: needs.init.outputs.needs-init == 'true'
-        run: |
-          cd ext
-          tar -xvf "initialized-ext-macos.zip" --strip-components=1
-          rm -f "initialized-ext-macos.zip"
       - name: Setup PHP
         uses: shivammathur/setup-php@44454db4f0199b8b9685a5d763dc37cbf79108e1 # v2.36.0
         with:

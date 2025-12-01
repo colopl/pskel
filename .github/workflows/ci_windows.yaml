@@ -16,10 +16,6 @@ jobs:
         with:
           name: ${{ inputs.source-artifact-name }}
           path: .
-      - name: Extract artifact and cleanup
-        run: |
-          tar -xvf "${{ inputs.source-artifact-name }}.zip" --strip-components=1
-          rm -f "${{ inputs.source-artifact-name }}.zip"
       - name: Check if initialization is needed
         id: check
         run: |
@@ -57,39 +53,12 @@ jobs:
         with:
           name: ${{ inputs.source-artifact-name }}
           path: .
-      - name: Extract artifact and cleanup
-        shell: pwsh
-        run: |
-          $tempDir = New-Item -ItemType Directory -Path (Join-Path $env:TEMP ([System.Guid]::NewGuid().ToString()))
-          Expand-Archive -Path "${{ inputs.source-artifact-name }}.zip" -DestinationPath $tempDir -Force
-          $extractedRoot = Get-ChildItem -Path $tempDir -Directory | Select-Object -First 1
-          if ($extractedRoot) {
-            Get-ChildItem -Path $extractedRoot.FullName | Move-Item -Destination . -Force
-          } else {
-            Get-ChildItem -Path $tempDir | Move-Item -Destination . -Force
-          }
-          Remove-Item -Path $tempDir -Recurse -Force
-          Remove-Item -Path "${{ inputs.source-artifact-name }}.zip" -Force
       - name: Download initialized extension
         if: needs.init.outputs.needs-init == 'true'
         uses: actions/download-artifact@v5
         with:
           name: initialized-ext-windows
           path: ext\
-      - name: Extract extension artifact and cleanup
-        if: needs.init.outputs.needs-init == 'true'
-        shell: pwsh
-        run: |
-          $tempDir = New-Item -ItemType Directory -Path (Join-Path $env:TEMP ([System.Guid]::NewGuid().ToString()))
-          Expand-Archive -Path "ext\initialized-ext-windows.zip" -DestinationPath $tempDir -Force
-          $extractedRoot = Get-ChildItem -Path $tempDir -Directory | Select-Object -First 1
-          if ($extractedRoot) {
-            Get-ChildItem -Path $extractedRoot.FullName | Move-Item -Destination ext -Force
-          } else {
-            Get-ChildItem -Path $tempDir | Move-Item -Destination ext -Force
-          }
-          Remove-Item -Path $tempDir -Recurse -Force
-          Remove-Item -Path "ext\initialized-ext-windows.zip" -Force
       - name: Extract extension name
         id: ext-name
         shell: pwsh

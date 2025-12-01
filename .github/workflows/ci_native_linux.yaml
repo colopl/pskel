@@ -23,10 +23,6 @@ jobs:
         with:
           name: ${{ inputs.source-artifact-name }}
           path: .
-      - name: Extract artifact and cleanup
-        run: |
-          tar -xvf "${{ inputs.source-artifact-name }}.zip" --strip-components=1
-          rm -f "${{ inputs.source-artifact-name }}.zip"
       - name: Pull PHP container image
         id: pull-image
         run: |
