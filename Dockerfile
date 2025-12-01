@@ -1,6 +1,6 @@
 ARG PLATFORM=${BUILDPLATFORM:-linux/amd64}
 ARG IMAGE=php
-ARG TAG=8.5-cli-alpine
+ARG TAG=8.5-cli-trixie
 ARG SKIP_VALGRIND=0
 
 FROM --platform=${PLATFORM} ${IMAGE}:${TAG}
