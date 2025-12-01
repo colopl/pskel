@@ -19,10 +19,18 @@ jobs:
     runs-on: ${{ matrix.runs-on }}
     steps:
       - name: Download prepared workspace
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           name: ${{ inputs.source-artifact-name }}
           path: .
+      - name: Extract artifact and cleanup
+        run: |
+          for zip in *.zip; do
+            if test -f "$zip"; then
+              unzip -o "$zip"
+              rm -f "$zip"
+            fi
+          done
       - name: Pull PHP container image
         id: pull-image
         run: |

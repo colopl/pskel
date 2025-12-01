@@ -59,10 +59,20 @@ jobs:
           fetch-depth: 1
       - name: Download initialized extension
         if: needs.init.outputs.needs-init == 'true'
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           name: initialized-ext-coverage
           path: ext/
+      - name: Extract extension artifact and cleanup
+        if: needs.init.outputs.needs-init == 'true'
+        run: |
+          cd ext
+          for zip in *.zip; do
+            if test -f "$zip"; then
+              unzip -o "$zip"
+              rm -f "$zip"
+            fi
+          done
       - name: Install lcov
         run: |
           sudo apt-get update
@@ -96,11 +106,20 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y "lcov"
       - name: Download all coverage artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           pattern: coverage-*
           merge-multiple: true
           path: coverage-files/
+      - name: Extract coverage artifacts and cleanup
+        run: |
+          cd coverage-files
+          for zip in *.zip; do
+            if test -f "$zip"; then
+              unzip -o "$zip"
+              rm -f "$zip"
+            fi
+          done
       - name: Merge coverage files
         run: |
           COVERAGE_FILES=$(find "coverage-files/" -name "*_lcov.info" -type f)
@@ -117,10 +136,20 @@ jobs:
           lcov ${TRACEFILE_ARGS} --ignore-errors format --output-file "lcov.info"
       - name: Download initialized extension
         if: needs.init.outputs.needs-init == 'true'
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           name: initialized-ext-coverage
           path: ext/
+      - name: Extract extension artifact and cleanup
+        if: needs.init.outputs.needs-init == 'true'
+        run: |
+          cd ext
+          for zip in *.zip; do
+            if test -f "$zip"; then
+              unzip -o "$zip"
+              rm -f "$zip"
+            fi
+          done
       - name: Generate HTML coverage report
         run: |
           mkdir -p "coverage-html"

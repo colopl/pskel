@@ -12,10 +12,18 @@ jobs:
       needs-init: ${{ steps.check.outputs.needs-init }}
     steps:
       - name: Download prepared workspace
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           name: ${{ inputs.source-artifact-name }}
           path: .
+      - name: Extract artifact and cleanup
+        run: |
+          for zip in *.zip; do
+            if test -f "$zip"; then
+              unzip -o "$zip"
+              rm -f "$zip"
+            fi
+          done
       - name: Check if initialization is needed
         id: check
         run: |
@@ -49,16 +57,31 @@ jobs:
         ts: ['ts', 'nts']
     steps:
       - name: Download prepared workspace
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           name: ${{ inputs.source-artifact-name }}
           path: .
+      - name: Extract artifact and cleanup
+        shell: pwsh
+        run: |
+          Get-ChildItem -Filter *.zip | ForEach-Object {
+            Expand-Archive -Path $_.FullName -DestinationPath . -Force
+            Remove-Item $_.FullName
+          }
       - name: Download initialized extension
         if: needs.init.outputs.needs-init == 'true'
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           name: initialized-ext-windows
           path: ext\
+      - name: Extract extension artifact and cleanup
+        if: needs.init.outputs.needs-init == 'true'
+        shell: pwsh
+        run: |
+          Get-ChildItem -Path ext -Filter *.zip | ForEach-Object {
+            Expand-Archive -Path $_.FullName -DestinationPath ext -Force
+            Remove-Item $_.FullName
+          }
       - name: Extract extension name
         id: ext-name
         shell: pwsh
