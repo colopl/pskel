@@ -26,9 +26,6 @@ jobs:
         with:
           name: ${{ inputs.source-artifact-name }}
           path: .
-          run-id: ${{ inputs.source-artifact-run-id }}
-          repository: ${{ github.repository }}
-          github-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Pull PHP container image
         id: pull-image
         run: |
