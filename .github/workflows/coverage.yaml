@@ -67,7 +67,7 @@ jobs:
         if: needs.init.outputs.needs-init == 'true'
         run: |
           cd ext
-          bsdtar -xvf "initialized-ext-coverage.zip" --strip-components=1
+          tar -xvf "initialized-ext-coverage.zip" --strip-components=1
           rm -f "initialized-ext-coverage.zip"
       - name: Install lcov
         run: |
@@ -112,7 +112,7 @@ jobs:
           cd coverage-files
           for zip in *.zip; do
             if test -f "$zip"; then
-              bsdtar -xvf "$zip" --strip-components=1
+              tar -xvf "$zip" --strip-components=1
               rm -f "$zip"
             fi
           done
@@ -140,7 +140,7 @@ jobs:
         if: needs.init.outputs.needs-init == 'true'
         run: |
           cd ext
-          bsdtar -xvf "initialized-ext-coverage.zip" --strip-components=1
+          tar -xvf "initialized-ext-coverage.zip" --strip-components=1
           rm -f "initialized-ext-coverage.zip"
       - name: Generate HTML coverage report
         run: |

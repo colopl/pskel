@@ -18,7 +18,7 @@ jobs:
           path: .
       - name: Extract artifact and cleanup
         run: |
-          bsdtar -xvf "${{ inputs.source-artifact-name }}.zip" --strip-components=1
+          tar -xvf "${{ inputs.source-artifact-name }}.zip" --strip-components=1
           rm -f "${{ inputs.source-artifact-name }}.zip"
       - name: Check if initialization is needed
         id: check
@@ -58,10 +58,18 @@ jobs:
           name: ${{ inputs.source-artifact-name }}
           path: .
       - name: Extract artifact and cleanup
-        shell: bash
+        shell: pwsh
         run: |
-          bsdtar -xvf "${{ inputs.source-artifact-name }}.zip" --strip-components=1
-          rm -f "${{ inputs.source-artifact-name }}.zip"
+          $tempDir = New-Item -ItemType Directory -Path (Join-Path $env:TEMP ([System.Guid]::NewGuid().ToString()))
+          Expand-Archive -Path "${{ inputs.source-artifact-name }}.zip" -DestinationPath $tempDir -Force
+          $extractedRoot = Get-ChildItem -Path $tempDir -Directory | Select-Object -First 1
+          if ($extractedRoot) {
+            Get-ChildItem -Path $extractedRoot.FullName | Move-Item -Destination . -Force
+          } else {
+            Get-ChildItem -Path $tempDir | Move-Item -Destination . -Force
+          }
+          Remove-Item -Path $tempDir -Recurse -Force
+          Remove-Item -Path "${{ inputs.source-artifact-name }}.zip" -Force
       - name: Download initialized extension
         if: needs.init.outputs.needs-init == 'true'
         uses: actions/download-artifact@v5
@@ -70,11 +78,18 @@ jobs:
           path: ext\
       - name: Extract extension artifact and cleanup
         if: needs.init.outputs.needs-init == 'true'
-        shell: bash
+        shell: pwsh
         run: |
-          cd ext
-          bsdtar -xvf "initialized-ext-windows.zip" --strip-components=1
-          rm -f "initialized-ext-windows.zip"
+          $tempDir = New-Item -ItemType Directory -Path (Join-Path $env:TEMP ([System.Guid]::NewGuid().ToString()))
+          Expand-Archive -Path "ext\initialized-ext-windows.zip" -DestinationPath $tempDir -Force
+          $extractedRoot = Get-ChildItem -Path $tempDir -Directory | Select-Object -First 1
+          if ($extractedRoot) {
+            Get-ChildItem -Path $extractedRoot.FullName | Move-Item -Destination ext -Force
+          } else {
+            Get-ChildItem -Path $tempDir | Move-Item -Destination ext -Force
+          }
+          Remove-Item -Path $tempDir -Recurse -Force
+          Remove-Item -Path "ext\initialized-ext-windows.zip" -Force
       - name: Extract extension name
         id: ext-name
         shell: pwsh

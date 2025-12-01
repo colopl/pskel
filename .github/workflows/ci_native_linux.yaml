@@ -25,7 +25,7 @@ jobs:
           path: .
       - name: Extract artifact and cleanup
         run: |
-          bsdtar -xvf "${{ inputs.source-artifact-name }}.zip" --strip-components=1
+          tar -xvf "${{ inputs.source-artifact-name }}.zip" --strip-components=1
           rm -f "${{ inputs.source-artifact-name }}.zip"
       - name: Pull PHP container image
         id: pull-image
