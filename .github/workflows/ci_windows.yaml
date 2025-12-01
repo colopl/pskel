@@ -5,9 +5,6 @@ on:
       source-artifact-name:
         required: true
         type: string
-      source-artifact-run-id:
-        required: true
-        type: string
 jobs:
   init:
     runs-on: ubuntu-24.04

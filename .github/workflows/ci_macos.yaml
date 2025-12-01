@@ -5,9 +5,6 @@ on:
       source-artifact-name:
         required: true
         type: string
-      source-artifact-run-id:
-        required: true
-        type: string
 jobs:
   init:
     runs-on: ubuntu-24.04
@@ -19,9 +16,6 @@ jobs:
         with:
           name: ${{ inputs.source-artifact-name }}
           path: .
-          run-id: ${{ inputs.source-artifact-run-id }}
-          repository: ${{ github.repository }}
-          github-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Check if initialization is needed
         id: check
         run: |
@@ -59,9 +53,6 @@ jobs:
         with:
           name: ${{ inputs.source-artifact-name }}
           path: .
-          run-id: ${{ inputs.source-artifact-run-id }}
-          repository: ${{ github.repository }}
-          github-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Download initialized extension
         if: needs.init.outputs.needs-init == 'true'
         uses: actions/download-artifact@v6

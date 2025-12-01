@@ -20,22 +20,18 @@ jobs:
     uses: ./.github/workflows/ci_native_linux.yaml
     with:
       source-artifact-name: ${{ needs.Prepare.outputs.source-artifact-name }}
-      source-artifact-run-id: ${{ needs.Prepare.outputs.source-artifact-run-id }}
   Linux_Emulated:
     needs: Prepare
     uses: ./.github/workflows/ci_emulated_linux.yaml
     with:
       source-artifact-name: ${{ needs.Prepare.outputs.source-artifact-name }}
-      source-artifact-run-id: ${{ needs.Prepare.outputs.source-artifact-run-id }}
   macOS:
     needs: Prepare
     uses: ./.github/workflows/ci_macos.yaml
     with:
       source-artifact-name: ${{ needs.Prepare.outputs.source-artifact-name }}
-      source-artifact-run-id: ${{ needs.Prepare.outputs.source-artifact-run-id }}
   Windows:
     needs: Prepare
     uses: ./.github/workflows/ci_windows.yaml
     with:
       source-artifact-name: ${{ needs.Prepare.outputs.source-artifact-name }}
-      source-artifact-run-id: ${{ needs.Prepare.outputs.source-artifact-run-id }}

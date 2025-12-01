@@ -6,9 +6,6 @@ on:
       source-artifact-name:
         required: true
         type: string
-      source-artifact-run-id:
-        required: true
-        type: string
 
 jobs:
   Linux:
