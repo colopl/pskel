@@ -130,36 +130,40 @@ jobs:
           pattern: coverage-*
           merge-multiple: true
           path: coverage-files/
-      - name: Merge coverage files
-        run: |
-          mapfile -t COVERAGE_FILES < <(find "coverage-files/" -name "*_lcov.info" -type f | sort)
-          if test "${#COVERAGE_FILES[@]}" -eq 0; then
-            echo "No coverage files found"
-            exit 1
-          fi
-
-          cp "${COVERAGE_FILES[0]}" "lcov.info"
-          for FILE in "${COVERAGE_FILES[@]:1}"; do
-            echo "Merging ${FILE}"
-            lcov --add-tracefile "lcov.info" --add-tracefile "${FILE}" --ignore-errors format --output-file "lcov.info.tmp"
-            mv "lcov.info.tmp" "lcov.info"
-          done
       - name: Download initialized extension
         if: needs.init.outputs.needs-init == 'true'
         uses: actions/download-artifact@v6
         with:
           name: initialized-ext-coverage
           path: ext/
-      - name: Generate HTML coverage report
+      - name: Generate integrated HTML coverage reports
         run: |
+          if ! test -d "/ext"; then
+            sudo ln -s "${GITHUB_WORKSPACE}/ext" /ext
+          fi
           mkdir -p "coverage-html"
-          sudo mv "ext" "/"
-          sudo chmod -R +r "/ext"
-          genhtml --output-directory "coverage-html" --title "Coverage Report" "lcov.info"
-      - name: Run octocov
-        uses: k1LoW/octocov-action@73d561f65d59e66899ed5c87e4621a913b5d5c20 # v1.5.0
-        with:
-          config: .github/octocov.yml
+          cd "coverage-files" || exit 1
+          set -- ./*.info
+          if test "${1}" = "./*.info"; then
+            echo "No coverage .info files found"
+            exit 1
+          fi
+          if test "${2+set}" != "set"; then
+            cp "${1}" ../total.info
+          else
+            lcov --ignore-errors format -a "${1}" -a "${2}" -o "merged.info"
+            shift 2
+            while test "$#" -gt 0; do
+              lcov --ignore-errors format -a "merged.info" -a "${1}" -o "merged2.info"
+              mv "merged2.info" "merged.info"
+              shift
+            done
+            mv "merged.info" ../total.info
+          fi
+          cd - || exit 1
+          genhtml "total.info" \
+            --output-directory "coverage-html" \
+            --title "Extension code coverage"
       - name: Setup Pages
         uses: actions/configure-pages@v5
       - name: Upload Pages artifact
