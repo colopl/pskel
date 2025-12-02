@@ -106,12 +106,6 @@ bongo.c     |75.0%     20|80.0%     5|    -      0
       Total:|75.0%     20|80.0%     5|    -      0
 ```
 
-### GitHub Actions での確認
-
-[octocov](https://github.com/k1LoW/octocov) を用いて GitHub Actions でカバレッジ情報を確認することができます。
-
-Pull Request を作成すると自動的に octocov によるカバレッジがコメントされます。
-
 ### GitHub Pages での確認
 
 リポジトリの GitHub Pages を有効にし、 Actions による deploy を有効にすることで `lcov` および `genhtml` コマンドによって生成されたコードカバレッジを GitHub Pages で閲覧できるようになります。
