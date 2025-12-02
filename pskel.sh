@@ -161,7 +161,7 @@ build_php_if_not_exists() {
     CFLAGS="-DZEND_TRACK_ARENA_ALLOC" \
     CPPFLAGS="${CFLAGS}" \
     LDFLAGS="${LDFLAGS}" \
-    CONFIGURE_OPTS="${CONFIGURE_OPTS} --enable-debug $(php -r "echo PHP_ZTS === 1 ? '--enable-zts' : '';") --enable-option-checking=fatal --disable-phpdbg --disable-cgi --disable-fpm --enable-cli --without-pcre-jit --disable-opcache-jit --disable-zend-max-execution-timers" \
+    CONFIGURE_OPTS="${CONFIGURE_OPTS} --enable-debug $(php -r "echo (bool)PHP_ZTS ? '--enable-zts' : '';") --enable-option-checking=fatal --disable-phpdbg --disable-cgi --disable-fpm --enable-cli --without-pcre-jit --disable-opcache-jit --disable-zend-max-execution-timers" \
     cmd_build "${PREFIX}"
 
     if test -n "${GITHUB_ACTIONS}" && test -d "${PHP_CACHE_DIR}"; then
@@ -203,7 +203,7 @@ generate_cache_key() {
   COMPILER="${2}"
 
   PHP_VERSION="$(php -r 'echo PHP_VERSION;')"
-  PHP_ZTS="$(php -r 'echo PHP_ZTS === 1 ? "zts" : "nts";')"
+  PHP_ZTS="$(php -r 'echo (bool)PHP_ZTS ? "zts" : "nts";')"
 
   if test -n "${CONTAINER_IMAGE_HASH}"; then
     IMAGE_HASH="${CONTAINER_IMAGE_HASH}"
