@@ -284,9 +284,9 @@ EOF
 
   PSKEL_EXT_DIR="$(get_ext_dir)"
 
-  lcov --capture --directory "${PSKEL_EXT_DIR}" ${LCOV_OPTS} \
+  lcov --capture --directory "${PSKEL_EXT_DIR}" \
+    ${LCOV_OPTS} \
     --exclude "/usr/local/include/*" \
-    --exclude "${PSKEL_EXT_DIR}/third_party/*" \
     --output-file "${PSKEL_EXT_DIR}/lcov.info"
   lcov --list "${PSKEL_EXT_DIR}/lcov.info"
 }
