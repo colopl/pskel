@@ -58,7 +58,7 @@ Pskelは、PHP拡張機能の開発を迅速かつ効率的に行うためのス
 開発環境起動後、ターミナルで以下のコマンドを実行します。
 
 ```bash
-$ pskel init <YOUR_EXTENSION_NAME>
+$ pskel init <YOUR_EXTENSION_NAME> <VENDOR_NAME (PHP >= 8.5 以上)>
 ```
 
 これにより、 `/ext` ディレクトリに拡張機能の雛形が作成されます。

@@ -58,7 +58,7 @@ It provides a comprehensive toolkit that covers everything from setting up the d
 After launching the development environment, run the following command in the terminal:
 
 ```bash
-$ pskel init <YOUR_EXTENSION_NAME>
+$ pskel init <YOUR_EXTENSION_NAME> <VENDOR_NAME (PHP >= 8.5 only)>
 ```
 
 This will create an extension template in the `/ext` directory.
