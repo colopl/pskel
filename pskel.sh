@@ -79,12 +79,12 @@ EOF
       case "${1}" in
         debug) build_php_if_not_exists "debug";;
         gcov)
-          CONFIGURE_OPTS="--enable-gcov"
+          CONFIGURE_OPTS="${CONFIGURE_OPTS} --enable-gcov"
           build_php_if_not_exists "gcov"
           CFLAGS="${CFLAGS} --coverage"
           ;;
         valgrind)
-          CONFIGURE_OPTS="--with-valgrind"
+          CONFIGURE_OPTS="${CONFIGURE_OPTS} --with-valgrind"
           build_php_if_not_exists "valgrind"
           TEST_PHP_ARGS="${TEST_PHP_ARGS} -m"
           ;;
@@ -96,19 +96,19 @@ EOF
       CXX="$(command -v "clang++")"
       case "${1}" in
         msan)
-          CONFIGURE_OPTS="--enable-memory-sanitizer"
+          CONFIGURE_OPTS="${CONFIGURE_OPTS} --enable-memory-sanitizer"
           build_php_if_not_exists "msan"
           CFLAGS="${CFLAGS} -fsanitize=memory"
           LDFLAGS="${LDFLAGS} -fsanitize=memory"
           ;;
         asan)
-          CONFIGURE_OPTS="--enable-address-sanitizer"
+          CONFIGURE_OPTS="${CONFIGURE_OPTS} --enable-address-sanitizer"
           build_php_if_not_exists "asan"
           CFLAGS="${CFLAGS} -fsanitize=address"
           LDFLAGS="${LDFLAGS} -fsanitize=address"
           ;;
         ubsan)
-          CONFIGURE_OPTS="--enable-undefined-sanitizer"
+          CONFIGURE_OPTS="${CONFIGURE_OPTS} --enable-undefined-sanitizer"
           build_php_if_not_exists "ubsan"
           CFLAGS="${CFLAGS} -fsanitize=undefined"
           LDFLAGS="${LDFLAGS} -fsanitize=undefined"
@@ -284,7 +284,10 @@ EOF
 
   PSKEL_EXT_DIR="$(get_ext_dir)"
 
-  lcov --capture --directory "${PSKEL_EXT_DIR}" ${LCOV_OPTS} --exclude "/usr/local/include/*" --output-file "${PSKEL_EXT_DIR}/lcov.info"
+  lcov --capture --directory "${PSKEL_EXT_DIR}" ${LCOV_OPTS} \
+    --exclude "/usr/local/include/*" \
+    --exclude "${PSKEL_EXT_DIR}/third_party/*" \
+    --output-file "${PSKEL_EXT_DIR}/lcov.info"
   lcov --list "${PSKEL_EXT_DIR}/lcov.info"
 }
 
