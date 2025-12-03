@@ -1,6 +1,9 @@
 services:
   shell:
     image: ${SHELL_IMAGE:-shell}
+    # environment:
+      # - CONFIGURE_OPTS=--enable-pdo --enable-mysqlnd --with-pdo-mysql
+      # - LCOV_OPTS=--exclude */third_party/*
     build:
       context: ./
       dockerfile: ./Dockerfile
