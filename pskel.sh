@@ -58,7 +58,7 @@ EOF
   fi
   PSKEL_EXT_DIR="$(get_ext_dir --no-init)"
   rm -rf "/tmp/pskel_extension_tmp/${1}/.gitkeep"
-  rsync -av "/tmp/pskel_extension_tmp/${1}/" "${PSKEL_EXT_DIR}/"
+  cp -a "/tmp/pskel_extension_tmp/${1}/." "${PSKEL_EXT_DIR}/"
   rm -rf "${PSKEL_EXT_DIR}/.gitkeep"
 }
 
@@ -204,6 +204,7 @@ generate_cache_key() {
 
   PHP_VERSION="$(php -r 'echo PHP_VERSION;')"
   PHP_ZTS="$(php -r 'echo (bool)PHP_ZTS ? "zts" : "nts";')"
+  ARCH="$(uname -m)"
 
   if test -n "${CONTAINER_IMAGE_HASH}"; then
     IMAGE_HASH="${CONTAINER_IMAGE_HASH}"
@@ -214,7 +215,7 @@ generate_cache_key() {
     fi
   fi
 
-  echo "php-${PHP_VERSION}-${PHP_ZTS}-${BUILD_TYPE}-${COMPILER}-${IMAGE_HASH}"
+  echo "php-${PHP_VERSION}-${PHP_ZTS}-${BUILD_TYPE}-${COMPILER}-${ARCH}-${IMAGE_HASH}"
 }
 
 cache_php_build() {

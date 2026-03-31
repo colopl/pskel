@@ -12,36 +12,38 @@ ENV LC_ALL="C"
 
 RUN docker-php-source extract \
  && if test -f "/etc/debian_version"; then \
-      apt-get update \
- &&   DEBIAN_FRONTEND="noninteractive" apt-get install -y "bison" "re2c" "zlib1g-dev" "libsqlite3-dev" "libxml2-dev" \
+      apt-get update  && \
+      DEBIAN_FRONTEND="noninteractive" apt-get install -y "bison" "re2c" "zlib1g-dev" "libsqlite3-dev" "libxml2-dev" \
         "autoconf" "pkg-config" "make" "gcc" "rsync" "git" "ssh" "libc6-dbg" \
         "ca-certificates" "tzdata" "lsb-release" "curl" "gnupg" \
         "lcov" "gzip" \
         "vim" \
         "unzip" && \
-        mkdir -p "/usr/share/keyrings" && \
-        curl -sSL "https://apt.llvm.org/llvm-snapshot.gpg.key" | gpg --dearmor > "/usr/share/keyrings/llvm-archive-keyring.gpg" && \
-        echo "deb [signed-by=/usr/share/keyrings/llvm-archive-keyring.gpg] http://apt.llvm.org/$(lsb_release -cs)/ llvm-toolchain-$(lsb_release -cs) main" > "/etc/apt/sources.list.d/llvm.list" && \
-        echo "deb [signed-by=/usr/share/keyrings/llvm-archive-keyring.gpg] http://apt.llvm.org/$(lsb_release -cs)/ llvm-toolchain-$(lsb_release -cs)-21 main" >> "/etc/apt/sources.list.d/llvm.list" && \
-        apt-get update && \
-        DEBIAN_FRONTEND="noninteractive" apt-get install --no-install-recommends -y \
+      # fixme: re-enable keyring usage when SHA256 key is available
+      # apt-get --no-install-recommends install -y "gnupg" && \
+      # mkdir -p "/usr/share/keyrings" && \
+      # curl -sSL "https://apt.llvm.org/llvm-snapshot.gpg.key" | gpg --dearmor > "/usr/share/keyrings/llvm-archive-keyring.gpg" && \
+      echo "deb [trusted=yes] http://apt.llvm.org/trixie/ llvm-toolchain-trixie main" > "/etc/apt/sources.list.d/llvm.list" && \
+      echo "deb [trusted=yes] http://apt.llvm.org/trixie/ llvm-toolchain-trixie-21 main" >> "/etc/apt/sources.list.d/llvm.list" && \
+      apt-get update && \
+      apt-get install --no-install-recommends -y \
         "clang-21" "clang-tools-21" "clang-format-21" "clang-tidy-21" \
         "libclang-rt-21-dev" "lld-21" "lldb-21" \
         "libc++-21-dev" "libc++abi-21-dev" \
         "llvm-21" "llvm-21-dev" "llvm-21-runtime" \
         "clang-format-21" && \
-        update-alternatives --install "/usr/bin/clang" clang "/usr/bin/clang-21" 100 && \
-        update-alternatives --install "/usr/bin/clang++" clang++ "/usr/bin/clang++-21" 100 && \
-        update-alternatives --install "/usr/bin/clang-format" clang-format "/usr/bin/clang-format-21" 100 && \
-        update-alternatives --install "/usr/bin/clang-tidy" clang-tidy "/usr/bin/clang-tidy-21" 100 && \
-        update-alternatives --install "/usr/bin/lldb" lldb "/usr/bin/lldb-21" 100 && \
-        update-alternatives --install "/usr/bin/ld.lld" ld.lld "/usr/bin/ld.lld-21" 100; \
-        update-alternatives --install "/usr/bin/llvm-symbolizer" llvm-symbolizer "/usr/bin/llvm-symbolizer-21" 100 && \
-        update-alternatives --install "/usr/bin/llvm-config" llvm-config "/usr/bin/llvm-config-21" 100; \
+      update-alternatives --install "/usr/bin/clang" clang "/usr/bin/clang-21" 100 && \
+      update-alternatives --install "/usr/bin/clang++" clang++ "/usr/bin/clang++-21" 100 && \
+      update-alternatives --install "/usr/bin/clang-tidy" clang-tidy "/usr/bin/clang-tidy-21" 100 && \
+      update-alternatives --install "/usr/bin/lldb" lldb "/usr/bin/lldb-21" 100 && \
+      update-alternatives --install "/usr/bin/ld.lld" ld.lld "/usr/bin/ld.lld-21" 100 && \
+      update-alternatives --install "/usr/bin/llvm-symbolizer" llvm-symbolizer "/usr/bin/llvm-symbolizer-21" 100 && \
+      update-alternatives --install "/usr/bin/llvm-config" llvm-config "/usr/bin/llvm-config-21" 100 && \
+      update-alternatives --install "/usr/bin/clang-format" clang-format "/usr/bin/clang-format-21" 100; \
     else \
       apk add --no-cache "bison" "zlib-dev" "sqlite-dev" "libxml2-dev" "linux-headers" \
         "autoconf" "pkgconfig" "make" "gcc" "g++" "musl-dbg" \
-        "musl-dev" "rsync" "git" "openssh" \
+        "musl-dev" "git" "openssh" \
         "patch" "lcov" "gzip" \
         "vim" \
         "unzip"; \

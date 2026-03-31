@@ -18,7 +18,7 @@ jobs:
       needs-init: ${{ steps.check.outputs.needs-init }}
     steps:
       - name: Download prepared workspace
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           name: ${{ inputs.artifact_name }}
           path: ${{ runner.temp }}/source-archive
@@ -43,7 +43,7 @@ jobs:
           docker compose run -v"$(pwd)/ext:/ext" --rm shell pskel init example
       - name: Upload initialized extension
         if: steps.check.outputs.needs-init == 'true'
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: initialized-ext-windows
           path: ext/
@@ -61,7 +61,7 @@ jobs:
         ts: ['ts', 'nts']
     steps:
       - name: Download prepared workspace
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           name: ${{ inputs.artifact_name }}
           path: ${{ runner.temp }}/source-archive
@@ -76,7 +76,7 @@ jobs:
           Remove-Item $archivePath
       - name: Download initialized extension
         if: needs.init.outputs.needs-init == 'true'
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           name: initialized-ext-windows
           path: ext\
@@ -88,7 +88,7 @@ jobs:
           echo "name=$name" >> $env:GITHUB_OUTPUT
       - name: Setup PHP
         id: setup-php
-        uses: php/setup-php-sdk@474d4e386703a8bf269c41661c6b934a751a61bf # v0.11
+        uses: php/setup-php-sdk@e2ce1c294f272ed93e8083f14649f5adadf93788 # v0.12
         with:
           version: ${{ matrix.version }}
           arch: ${{ matrix.arch }}
