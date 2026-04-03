@@ -13,5 +13,7 @@
     }
   },
   "dockerComposeFile": "./../compose.yaml",
-  "service": "shell"
+  "service": "shell",
+  "workspaceFolder": "/workspaces/pskel",
+  "postCreateCommand": "ln -sf /workspaces/pskel/pskel.sh /usr/local/bin/pskel"
 }
