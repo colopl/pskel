@@ -62,7 +62,7 @@ EOF
 {
     "name": "${EXT_VENDOR}/${EXT_NAME}",
     "type": "php-ext",
-    "license": "BSD-3-Clause",
+    "license": "PHP-3.01",
     "description": "Describe your extension here",
     "require": {
         "php": ">=8.1"
