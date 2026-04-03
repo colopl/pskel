@@ -17,5 +17,6 @@
   "mounts": [
     "source=${localWorkspaceFolder},target=/workspaces/pskel,type=bind,consistency=cached"
   ],
-  "workspaceFolder": "/workspaces/pskel"
+  "workspaceFolder": "/workspaces/pskel",
+  "postCreateCommand": "ln -sf /workspaces/pskel/pskel.sh /usr/local/bin/pskel"
 }

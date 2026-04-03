@@ -35,7 +35,7 @@ cmd_init() {
   case "${1}" in
     -h|--help)
       cat << EOF
-Usage: ${0} init [extension_name] [ext_skel.php options...]
+Usage: ${0} init <extension_name> [vendor_name] [ext_skel.php options...]
 EOF
       return 0
       ;;
@@ -45,20 +45,63 @@ EOF
       ;;
   esac
 
+  EXT_NAME="${1}"
+  shift
+
+  if test -n "${1}" && test "${1}" = "${1#-}"; then
+    EXT_VENDOR="${1}"
+    shift
+  else
+    EXT_VENDOR="pskel"
+  fi
+
+  EXT_NAME="$(echo "${EXT_NAME}" | tr '[:upper:]' '[:lower:]')"
+  EXT_VENDOR="$(echo "${EXT_VENDOR}" | tr '[:upper:]' '[:lower:]')"
+
+  case "${EXT_NAME}" in
+    *[!-a-z0-9_.]*)
+      echo "Error: Extension name must only contain lowercase letters, numbers, hyphens, underscores, and dots." >&2
+      return 1
+      ;;
+  esac
+
+  case "${EXT_VENDOR}" in
+    *[!-a-z0-9_.]*)
+      echo "Error: Vendor name must only contain lowercase letters, numbers, hyphens, underscores, and dots." >&2
+      return 1
+      ;;
+  esac
+
   mkdir -p "/tmp/pskel_extension_tmp"
   if test "$(/usr/local/bin/php -r 'echo PHP_VERSION_ID;')" -lt "80500"; then
-    /usr/local/bin/php "/usr/src/php/ext/ext_skel.php" --ext "${1}" --dir "/tmp/pskel_extension_tmp" "${@}"
+    /usr/local/bin/php "/usr/src/php/ext/ext_skel.php" --ext "${EXT_NAME}" --dir "/tmp/pskel_extension_tmp" "${@}"
+    cat > "/tmp/pskel_extension_tmp/${EXT_NAME}/composer.json" << COMPOSER_EOF
+{
+    "name": "${EXT_VENDOR}/${EXT_NAME}",
+    "type": "php-ext",
+    "license": "PHP-3.01",
+    "description": "Describe your extension here",
+    "require": {
+        "php": ">=8.1"
+    },
+    "php-ext": {
+        "extension-name": "${EXT_NAME}",
+        "configure-options": [
+            {
+                "name": "enable-${EXT_NAME}",
+                "needs-value": false,
+                "description": "whether to enable ${EXT_NAME} support"
+            }
+        ]
+    }
+}
+COMPOSER_EOF
   else
-    if test -z "${2}"; then
-      EXT_VENDOR="pskel"
-    else
-      EXT_VENDOR="${2}"
-    fi
-    /usr/local/bin/php "/usr/src/php/ext/ext_skel.php" --vendor "${EXT_VENDOR}" --ext "${1}" --dir "/tmp/pskel_extension_tmp" "${@}"
+    /usr/local/bin/php "/usr/src/php/ext/ext_skel.php" --vendor "${EXT_VENDOR}" --ext "${EXT_NAME}" --dir "/tmp/pskel_extension_tmp" "${@}"
   fi
   PSKEL_EXT_DIR="$(get_ext_dir --no-init)"
-  rm -rf "/tmp/pskel_extension_tmp/${1}/.gitkeep"
-  cp -a "/tmp/pskel_extension_tmp/${1}/." "${PSKEL_EXT_DIR}/"
+  rm -rf "/tmp/pskel_extension_tmp/${EXT_NAME}/.gitkeep"
+  cp -a "/tmp/pskel_extension_tmp/${EXT_NAME}/." "${PSKEL_EXT_DIR}/"
   rm -rf "${PSKEL_EXT_DIR}/.gitkeep"
 }
 
