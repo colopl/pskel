@@ -55,6 +55,23 @@ EOF
     EXT_VENDOR="pskel"
   fi
 
+  EXT_NAME="$(echo "${EXT_NAME}" | tr '[:upper:]' '[:lower:]')"
+  EXT_VENDOR="$(echo "${EXT_VENDOR}" | tr '[:upper:]' '[:lower:]')"
+
+  case "${EXT_NAME}" in
+    *[!-a-z0-9_.]*)
+      echo "Error: Extension name must only contain lowercase letters, numbers, hyphens, underscores, and dots." >&2
+      return 1
+      ;;
+  esac
+
+  case "${EXT_VENDOR}" in
+    *[!-a-z0-9_.]*)
+      echo "Error: Vendor name must only contain lowercase letters, numbers, hyphens, underscores, and dots." >&2
+      return 1
+      ;;
+  esac
+
   mkdir -p "/tmp/pskel_extension_tmp"
   if test "$(/usr/local/bin/php -r 'echo PHP_VERSION_ID;')" -lt "80500"; then
     /usr/local/bin/php "/usr/src/php/ext/ext_skel.php" --ext "${EXT_NAME}" --dir "/tmp/pskel_extension_tmp" "${@}"
