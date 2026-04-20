@@ -19,6 +19,38 @@ get_ext_dir() {
   echo "${PSKEL_EXT_DIR}"
 }
 
+get_workspace_dir() {
+  if test -d "${CODESPACE_VSCODE_FOLDER}"; then
+    echo "${CODESPACE_VSCODE_FOLDER}"
+  elif test -d "/workspaces/pskel"; then
+    echo "/workspaces/pskel"
+  else
+    echo "Error: Workspace root not found." >&2
+    return 1
+  fi
+}
+
+get_license_template_path() {
+  WORKSPACE_DIR="$(get_workspace_dir)" || return 1
+
+  if test -f "${WORKSPACE_DIR}/LICENSE"; then
+    echo "${WORKSPACE_DIR}/LICENSE"
+  else
+    echo "Error: LICENSE template not found." >&2
+    return 1
+  fi
+}
+
+create_extension_license() {
+  LICENSE_TEMPLATE_PATH="$(get_license_template_path)" || return 1
+  LICENSE_YEAR="$(date -u "+%Y")"
+
+  sed \
+    -e "s/%YEAR%/${LICENSE_YEAR}/g" \
+    -e "s/%VENDOR%/${EXT_VENDOR}/g" \
+    "${LICENSE_TEMPLATE_PATH}" > "${PSKEL_TMP_DIR}/${EXT_NAME}/LICENSE"
+}
+
 cmd_usage() {
     cat << EOF
 Usage: ${0} [task] ...
@@ -105,6 +137,8 @@ COMPOSER_EOF
   else
     /usr/local/bin/php "/usr/src/php/ext/ext_skel.php" --vendor "${EXT_VENDOR}" --ext "${EXT_NAME}" --dir "${PSKEL_TMP_DIR}" "${@}"
   fi
+
+  create_extension_license
 
   PSKEL_EXT_DIR="$(get_ext_dir --no-init)"
   rm -rf "${PSKEL_TMP_DIR}/${EXT_NAME}/.gitkeep"
