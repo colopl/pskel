@@ -1,5 +1,6 @@
 {
   "name": "Pskel",
+  "initializeCommand": "git submodule update --init --recursive",
   "customizations": {
     "vscode": {
       "extensions": [

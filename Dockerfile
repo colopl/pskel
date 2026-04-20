@@ -51,6 +51,10 @@ COPY ./third_party/valgrind "/third_party/valgrind"
 ARG SKIP_VALGRIND
 RUN if test "${SKIP_VALGRIND}" != "1" && test -f "/etc/debian_version"; then \
       cd "/third_party/valgrind" && \
+        test -x "./autogen.sh" || { \
+          echo "Valgrind submodule is missing. Run 'git submodule update --init --recursive' before building the container." >&2; \
+          exit 1; \
+        } && \
         if test -f "/etc/debian_version"; then \
           apt-get update && \
           DEBIAN_FRONTEND="noninteractive" apt-get install -y \
