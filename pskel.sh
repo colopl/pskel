@@ -2,53 +2,167 @@
 
 set -e
 
-get_ext_dir() {
-  PSKEL_EXT_DIR="/ext"
+get_pskel_root_dir() {
+  PSKEL_PATH="${0}"
 
-  if test -d "${CODESPACE_VSCODE_FOLDER}"; then
-    echo "[Pskel] GitHub Codespace workspace detected, using \"${CODESPACE_VSCODE_FOLDER}/ext\"." >&2
-    PSKEL_EXT_DIR="${CODESPACE_VSCODE_FOLDER}/ext"
-  elif test -d "/workspaces/pskel/ext"; then
-    echo "[Pskel] Development Containers workspace detected, using \"/workspaces/pskel/ext\"." >&2
-    PSKEL_EXT_DIR="/workspaces/pskel/ext"
+  case "${PSKEL_PATH}" in
+    */*)
+      ;;
+    *)
+      PSKEL_PATH="$(command -v "${PSKEL_PATH}")"
+      ;;
+  esac
+
+  if command -v readlink >/dev/null 2>&1; then
+    PSKEL_PATH="$(readlink -f "${PSKEL_PATH}" 2>/dev/null || printf '%s' "${PSKEL_PATH}")"
+  fi
+
+  CDPATH='' cd -- "$(dirname -- "${PSKEL_PATH}")" && pwd
+}
+
+find_workspace_dir_from_pwd() {
+  SEARCH_DIR="${PWD}"
+
+  while test -n "${SEARCH_DIR}"; do
+    if test -f "${SEARCH_DIR}/pskel.sh" && test -f "${SEARCH_DIR}/.pskel/LICENSE.template"; then
+      echo "${SEARCH_DIR}"
+      return 0
+    fi
+
+    if test "${SEARCH_DIR}" = "/"; then
+      break
+    fi
+
+    SEARCH_DIR="$(dirname -- "${SEARCH_DIR}")"
+  done
+
+  return 1
+}
+
+get_ext_dir() {
+  WORKSPACE_DIR="$(get_workspace_dir)" || return 1
+
+  if test -d "${WORKSPACE_DIR}/ext"; then
+    if test -f "${WORKSPACE_DIR}/ext/.gitkeep" && test "$(cat "${WORKSPACE_DIR}/ext/.gitkeep")" = "pskel_uninitialized" && test "${1}" != "--no-init"; then
+      echo "[Pskel] Uninitialized project detected, initializing default skeleton." >&2
+      cmd_init "skeleton" >&2
+    fi
+    echo "[Pskel] Workspace extension directory detected, using \"${WORKSPACE_DIR}/ext\"." >&2
+    PSKEL_EXT_DIR="${WORKSPACE_DIR}/ext"
   elif test -f "/ext/.gitkeep" && test "$(cat "/ext/.gitkeep")" = "pskel_uninitialized" && test "${1}" != "--no-init"; then
     echo "[Pskel] Uninitialized project detected, initializing default skeleton." >&2
     cmd_init "skeleton" >&2
+    PSKEL_EXT_DIR="/ext"
+  elif test -d "/ext"; then
+    PSKEL_EXT_DIR="/ext"
+  else
+    echo "Error: Extension directory not found." >&2
+    return 1
   fi
 
   echo "${PSKEL_EXT_DIR}"
 }
 
 get_workspace_dir() {
-  if test -d "${CODESPACE_VSCODE_FOLDER}"; then
-    echo "${CODESPACE_VSCODE_FOLDER}"
-  elif test -d "/workspaces/pskel"; then
-    echo "/workspaces/pskel"
+  if test -n "${PSKEL_WORKSPACE_DIR}" && test -d "${PSKEL_WORKSPACE_DIR}"; then
+    echo "${PSKEL_WORKSPACE_DIR}"
+  elif PWD_WORKSPACE_DIR="$(find_workspace_dir_from_pwd 2>/dev/null)" && test -n "${PWD_WORKSPACE_DIR}"; then
+    echo "${PWD_WORKSPACE_DIR}"
   else
-    echo "Error: Workspace root not found." >&2
-    return 1
+    PSKEL_ROOT_DIR="$(get_pskel_root_dir)" || return 1
+    if test -d "${PSKEL_ROOT_DIR}"; then
+      echo "${PSKEL_ROOT_DIR}"
+    else
+      echo "Error: Workspace root not found." >&2
+      return 1
+    fi
   fi
 }
 
-get_license_template_path() {
-  WORKSPACE_DIR="$(get_workspace_dir)" || return 1
+get_project_license_template_path() {
+  PSKEL_ROOT_DIR="$(get_pskel_root_dir)" || return 1
+  LICENSE_TEMPLATE_PATH="${PSKEL_ROOT_DIR}/.pskel/LICENSE.template"
 
-  if test -f "${WORKSPACE_DIR}/LICENSE"; then
-    echo "${WORKSPACE_DIR}/LICENSE"
+  if test -f "${LICENSE_TEMPLATE_PATH}"; then
+    echo "${LICENSE_TEMPLATE_PATH}"
   else
     echo "Error: LICENSE template not found." >&2
     return 1
   fi
 }
 
-create_extension_license() {
-  LICENSE_TEMPLATE_PATH="$(get_license_template_path)" || return 1
+escape_sed_replacement() {
+  printf '%s' "${1}" | sed -e 's/[\\/&]/\\&/g'
+}
+
+slugify_vendor_name() {
+  printf '%s' "${1}" \
+    | tr '[:upper:]' '[:lower:]' \
+    | sed \
+      -e 's/[^a-z0-9._-]/-/g' \
+      -e 's/-\{2,\}/-/g' \
+      -e 's/^[._-]*//' \
+      -e 's/[._-]*$//'
+}
+
+create_project_license() {
+  LICENSE_TEMPLATE_PATH="$(get_project_license_template_path)" || return 1
+  WORKSPACE_DIR="$(get_workspace_dir)" || return 1
   LICENSE_YEAR="$(date -u "+%Y")"
+  LICENSE_YEAR_ESCAPED="$(escape_sed_replacement "${LICENSE_YEAR}")"
+  EXT_VENDOR_DISPLAY_ESCAPED="$(escape_sed_replacement "${EXT_VENDOR_DISPLAY}")"
 
   sed \
-    -e "s/%YEAR%/${LICENSE_YEAR}/g" \
-    -e "s/%VENDOR%/${EXT_VENDOR}/g" \
-    "${LICENSE_TEMPLATE_PATH}" > "${PSKEL_TMP_DIR}/${EXT_NAME}/LICENSE"
+    -e "s/%YEAR%/${LICENSE_YEAR_ESCAPED}/g" \
+    -e "s/%VENDOR%/${EXT_VENDOR_DISPLAY_ESCAPED}/g" \
+    "${LICENSE_TEMPLATE_PATH}" > "${WORKSPACE_DIR}/LICENSE"
+}
+
+create_project_composer_manifest() {
+  WORKSPACE_DIR="$(get_workspace_dir)" || return 1
+  EXT_COMPOSER_PATH="${PSKEL_TMP_DIR}/${EXT_NAME}/composer.json"
+
+  if ! test -f "${EXT_COMPOSER_PATH}"; then
+    echo "Error: composer.json template not found." >&2
+    return 1
+  fi
+
+  EXT_COMPOSER_PATH="${EXT_COMPOSER_PATH}" \
+  PROJECT_COMPOSER_PATH="${WORKSPACE_DIR}/composer.json" \
+  EXT_NAME="${EXT_NAME}" \
+  /usr/local/bin/php -r '
+    $sourcePath = getenv("EXT_COMPOSER_PATH");
+    $targetPath = getenv("PROJECT_COMPOSER_PATH");
+    $extensionName = getenv("EXT_NAME");
+
+    $manifest = json_decode((string) file_get_contents($sourcePath), true);
+    if (!is_array($manifest)) {
+        fwrite(STDERR, "Error: Failed to parse composer.json template.\n");
+        exit(1);
+    }
+
+    if (!isset($manifest["php-ext"]) || !is_array($manifest["php-ext"])) {
+        $manifest["php-ext"] = [];
+    }
+
+    $manifest["php-ext"]["extension-name"] = $extensionName;
+    $manifest["php-ext"]["build-path"] = "ext";
+    $manifest["php-ext"]["download-url-method"] = [
+        "pre-packaged-binary",
+        "pre-packaged-source",
+        "composer-default",
+    ];
+
+    $encoded = json_encode($manifest, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+    if (!is_string($encoded)) {
+        fwrite(STDERR, "Error: Failed to encode project composer.json.\n");
+        exit(1);
+    }
+
+    file_put_contents($targetPath, $encoded . PHP_EOL);
+  ' || return 1
+
+  rm -f "${EXT_COMPOSER_PATH}"
 }
 
 cmd_usage() {
@@ -81,10 +195,10 @@ EOF
   shift
 
   if test -n "${1}" && test "${1}" = "${1#-}"; then
-    EXT_VENDOR="${1}"
+    EXT_VENDOR_DISPLAY="${1}"
     shift
   else
-    EXT_VENDOR="pskel"
+    EXT_VENDOR_DISPLAY="pskel"
   fi
 
   PSKEL_TMP_DIR="$(mktemp -d "${TMPDIR:-/tmp}/pskel_extension_tmp.XXXXXX")"
@@ -95,7 +209,7 @@ EOF
   }
   trap cleanup_pskel_tmp_dir EXIT HUP INT TERM
 
-  EXT_VENDOR="$(echo "${EXT_VENDOR}" | tr '[:upper:]' '[:lower:]')"
+  EXT_VENDOR="$(slugify_vendor_name "${EXT_VENDOR_DISPLAY}")"
 
   case "${EXT_NAME}" in
     *[!-a-z0-9_.]*)
@@ -104,12 +218,10 @@ EOF
       ;;
   esac
 
-  case "${EXT_VENDOR}" in
-    *[!-a-z0-9_.]*)
-      echo "Error: Vendor name must only contain lowercase letters, numbers, hyphens, underscores, and dots." >&2
-      return 1
-      ;;
-  esac
+  if test -z "${EXT_VENDOR}"; then
+    echo "Error: Vendor name must contain at least one ASCII letter or number." >&2
+    return 1
+  fi
 
   if test "$(/usr/local/bin/php -r 'echo PHP_VERSION_ID;')" -lt "80500"; then
     /usr/local/bin/php "/usr/src/php/ext/ext_skel.php" --ext "${EXT_NAME}" --dir "${PSKEL_TMP_DIR}" "${@}"
@@ -138,9 +250,11 @@ COMPOSER_EOF
     /usr/local/bin/php "/usr/src/php/ext/ext_skel.php" --vendor "${EXT_VENDOR}" --ext "${EXT_NAME}" --dir "${PSKEL_TMP_DIR}" "${@}"
   fi
 
-  create_extension_license
+  create_project_composer_manifest
+  create_project_license
 
   PSKEL_EXT_DIR="$(get_ext_dir --no-init)"
+  rm -f "${PSKEL_EXT_DIR}/composer.json"
   rm -rf "${PSKEL_TMP_DIR}/${EXT_NAME}/.gitkeep"
   cp -a "${PSKEL_TMP_DIR}/${EXT_NAME}/." "${PSKEL_EXT_DIR}/"
   rm -rf "${PSKEL_EXT_DIR}/.gitkeep"

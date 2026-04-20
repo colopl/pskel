@@ -67,11 +67,13 @@ RUN if test "${SKIP_VALGRIND}" != "1" && test -f "/etc/debian_version"; then \
       cd -; \
     fi
 
-COPY ./pskel.sh "/usr/local/bin/pskel"
+COPY ./.pskel "/opt/pskel/.pskel"
+COPY ./pskel.sh "/opt/pskel/pskel.sh"
 COPY ./patches "/patches"
 COPY ./ext "/ext"
 
-RUN chmod +x "/usr/local/bin/pskel"
+RUN chmod +x "/opt/pskel/pskel.sh" \
+ && ln -sf "/opt/pskel/pskel.sh" "/usr/local/bin/pskel"
 
 RUN cat <<'EOF' > "/usr/local/bin/docker-entrypoint.sh"
 #!/bin/sh

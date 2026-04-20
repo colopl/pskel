@@ -46,7 +46,7 @@ It provides a comprehensive toolkit that covers everything from setting up the d
 1. Install [Visual Studio Code](https://code.visualstudio.com/)
 2. Install Docker / Docker Compose compatible runtime
 3. Create a repository using `colopl/pskel` as a template
-4. Clone locally, open in VSCode, and select "Open in Container"
+4. Clone locally, open in VSCode, and reopen it in the Dev Container
 
 ### Preparing for Development in GitHub Codespaces
 
@@ -58,10 +58,10 @@ It provides a comprehensive toolkit that covers everything from setting up the d
 After launching the development environment, run the following command in the terminal:
 
 ```bash
-$ pskel init <YOUR_EXTENSION_NAME> <VENDOR_NAME (PHP >= 8.5 only)>
+$ pskel init <YOUR_EXTENSION_NAME> "<COPYRIGHT_HOLDER / VENDOR_NAME>"
 ```
 
-This will create an extension template in the `/ext` directory.
+This will create an extension template in the `ext` directory and write project metadata files such as `LICENSE` and `composer.json` to the project root.
 
 Additional options available in `ext_skel.php` are also supported.
 
@@ -95,11 +95,11 @@ You can check the code coverage using lcov with the `pskel` command:
 ```bash
 $ pskel coverage
 ~~~
-Reading tracefile /workspaces/pskel/ext/lcov.info
+Reading tracefile ext/lcov.info
             |Lines       |Functions  |Branches
 Filename    |Rate     Num|Rate    Num|Rate     Num
 ==================================================
-[/workspaces/pskel/ext/]
+[ext/]
 bongo.c     |75.0%     20|80.0%     5|    -      0
 ==================================================
       Total:|75.0%     20|80.0%     5|    -      0
