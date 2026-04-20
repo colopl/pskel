@@ -12,6 +12,8 @@ services:
     security_opt:
       - seccomp:unconfined
     privileged: true
+    volumes:
+      - .:/workspace:cached
     tty: true
   #   depends_on:
   #     - mysql

@@ -1,6 +1,5 @@
 {
   "name": "Pskel",
-  "initializeCommand": "git submodule update --init --recursive",
   "customizations": {
     "vscode": {
       "extensions": [
@@ -15,9 +14,7 @@
   },
   "dockerComposeFile": "./../compose.yaml",
   "service": "shell",
-  "mounts": [
-    "source=${localWorkspaceFolder},target=/workspace,type=bind,consistency=cached"
-  ],
   "workspaceFolder": "/workspace",
+  "initializeCommand": "git submodule update --init --recursive",
   "postCreateCommand": "ln -sf \"$(pwd)/pskel.sh\" /usr/local/bin/pskel"
 }
