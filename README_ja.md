@@ -127,4 +127,4 @@ A: GitHub 上または [X (旧Twitter)](https://x.com/zeriyoshi) でお気軽に
 
 ## ライセンス
 
-PHP License 3.01
+BSD-3-Clause

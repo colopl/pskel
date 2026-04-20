@@ -126,4 +126,4 @@ A: Feel free to ask on GitHub or [X (formerly Twitter)](https://x.com/zeriyoshi)
 
 ## License
 
-PHP License 3.01
+BSD-3-Clause
