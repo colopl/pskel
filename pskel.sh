@@ -82,7 +82,7 @@ EOF
     "license": "BSD-3-Clause",
     "description": "Describe your extension here",
     "require": {
-        "php": ">=8.1"
+        "php": "~8.1.0"
     },
     "php-ext": {
         "extension-name": "${EXT_NAME}",
