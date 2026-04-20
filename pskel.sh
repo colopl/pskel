@@ -52,11 +52,11 @@ EOF
     EXT_VENDOR="${1}"
     shift
   else
-    EXT_VENDOR="pskel"
+    EXT_VENDOR="pskel_stub"
   fi
 
   mkdir -p "/tmp/pskel_extension_tmp"
-  if test "$(/usr/local/bin/php -r 'echo PHP_VERSION_ID;')" -lt "80500"; then
+  if test "$(/usr/local/bin/php -r 'echo PHP_VERSION_ID;')" -ge "80100"; then
     /usr/local/bin/php "/usr/src/php/ext/ext_skel.php" --ext "${EXT_NAME}" --dir "/tmp/pskel_extension_tmp" "${@}"
     cat > "/tmp/pskel_extension_tmp/${EXT_NAME}/composer.json" << COMPOSER_EOF
 {
@@ -65,7 +65,7 @@ EOF
     "license": "BSD-3-Clause",
     "description": "Describe your extension here",
     "require": {
-        "php": ">=8.1"
+        "php": "~8.1.0"
     },
     "php-ext": {
         "extension-name": "${EXT_NAME}",
