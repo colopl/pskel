@@ -487,6 +487,40 @@ EOF
     ${LCOV_OPTS} \
     --exclude "/usr/local/include/*" \
     --output-file "${PSKEL_EXT_DIR}/lcov.info"
+
+  # Convert lcov 2.0 FNL/FNA records to legacy FN/FNDA for CI compatibility.
+  awk 'BEGIN { _n = 0 }
+    /^FNL:/ {
+      split($0, a, /[,:]/)
+      _start[a[2]] = a[3]
+      next
+    }
+    /^FNA:/ {
+      idx = ""
+      cnt = ""
+      rest = $0
+      sub(/^FNA:/, "", rest)
+      split(rest, b, /,/)
+      idx = b[1]
+      cnt = b[2]
+      sub(/^[^,]*,[^,]*,/, "", rest)
+      _fn[_n] = "FN:" _start[idx] "," rest
+      _fnda[_n] = "FNDA:" cnt "," rest
+      _n++
+      next
+    }
+    /^FNF:/ {
+      for (i = 0; i < _n; i++) print _fn[i]
+      for (i = 0; i < _n; i++) print _fnda[i]
+      _n = 0
+      print
+      next
+    }
+    { print }
+  ' "${PSKEL_EXT_DIR}/lcov.info" > "${PSKEL_EXT_DIR}/lcov.info.tmp" \
+    && cat "${PSKEL_EXT_DIR}/lcov.info.tmp" > "${PSKEL_EXT_DIR}/lcov.info" \
+    && rm -f "${PSKEL_EXT_DIR}/lcov.info.tmp"
+
   lcov --list "${PSKEL_EXT_DIR}/lcov.info"
 }
 
