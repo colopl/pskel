@@ -64,8 +64,8 @@ EOF
   trap cleanup_pskel_tmp_dir EXIT HUP INT TERM
 
   EXT_VENDOR="$(echo "${EXT_VENDOR}" | tr '[:upper:]' '[:lower:]')"
-    /usr/local/bin/php "/usr/src/php/ext/ext_skel.php" --ext "${EXT_NAME}" --dir "${PSKEL_TMP_DIR}" "${@}"
-    cat > "${PSKEL_TMP_DIR}/${EXT_NAME}/composer.json" << COMPOSER_EOF
+
+  case "${EXT_NAME}" in
     *[!-a-z0-9_.]*)
       echo "Error: Extension name must only contain lowercase letters, numbers, hyphens, underscores, and dots." >&2
       return 1
@@ -79,10 +79,9 @@ EOF
       ;;
   esac
 
-  mkdir -p "/tmp/pskel_extension_tmp"
   if test "$(/usr/local/bin/php -r 'echo PHP_VERSION_ID;')" -lt "80500"; then
-    /usr/local/bin/php "/usr/src/php/ext/ext_skel.php" --ext "${EXT_NAME}" --dir "/tmp/pskel_extension_tmp" "${@}"
-    cat > "/tmp/pskel_extension_tmp/${EXT_NAME}/composer.json" << COMPOSER_EOF
+    /usr/local/bin/php "/usr/src/php/ext/ext_skel.php" --ext "${EXT_NAME}" --dir "${PSKEL_TMP_DIR}" "${@}"
+    cat > "${PSKEL_TMP_DIR}/${EXT_NAME}/composer.json" << COMPOSER_EOF
 {
     "name": "${EXT_VENDOR}/${EXT_NAME}",
     "type": "php-ext",
@@ -104,11 +103,12 @@ EOF
 }
 COMPOSER_EOF
   else
-    /usr/local/bin/php "/usr/src/php/ext/ext_skel.php" --vendor "${EXT_VENDOR}" --ext "${EXT_NAME}" --dir "/tmp/pskel_extension_tmp" "${@}"
+    /usr/local/bin/php "/usr/src/php/ext/ext_skel.php" --vendor "${EXT_VENDOR}" --ext "${EXT_NAME}" --dir "${PSKEL_TMP_DIR}" "${@}"
   fi
+
   PSKEL_EXT_DIR="$(get_ext_dir --no-init)"
-  rm -rf "/tmp/pskel_extension_tmp/${EXT_NAME}/.gitkeep"
-  cp -a "/tmp/pskel_extension_tmp/${EXT_NAME}/." "${PSKEL_EXT_DIR}/"
+  rm -rf "${PSKEL_TMP_DIR}/${EXT_NAME}/.gitkeep"
+  cp -a "${PSKEL_TMP_DIR}/${EXT_NAME}/." "${PSKEL_EXT_DIR}/"
   rm -rf "${PSKEL_EXT_DIR}/.gitkeep"
 }
 
