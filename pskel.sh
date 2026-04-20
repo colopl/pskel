@@ -55,10 +55,17 @@ EOF
     EXT_VENDOR="pskel"
   fi
 
-  EXT_NAME="$(echo "${EXT_NAME}" | tr '[:upper:]' '[:lower:]')"
-  EXT_VENDOR="$(echo "${EXT_VENDOR}" | tr '[:upper:]' '[:lower:]')"
+  PSKEL_TMP_DIR="$(mktemp -d "${TMPDIR:-/tmp}/pskel_extension_tmp.XXXXXX")"
+  cleanup_pskel_tmp_dir() {
+    if test -n "${PSKEL_TMP_DIR}" && test -d "${PSKEL_TMP_DIR}"; then
+      rm -rf "${PSKEL_TMP_DIR}"
+    fi
+  }
+  trap cleanup_pskel_tmp_dir EXIT HUP INT TERM
 
-  case "${EXT_NAME}" in
+  EXT_VENDOR="$(echo "${EXT_VENDOR}" | tr '[:upper:]' '[:lower:]')"
+    /usr/local/bin/php "/usr/src/php/ext/ext_skel.php" --ext "${EXT_NAME}" --dir "${PSKEL_TMP_DIR}" "${@}"
+    cat > "${PSKEL_TMP_DIR}/${EXT_NAME}/composer.json" << COMPOSER_EOF
     *[!-a-z0-9_.]*)
       echo "Error: Extension name must only contain lowercase letters, numbers, hyphens, underscores, and dots." >&2
       return 1
