@@ -85,6 +85,10 @@ jobs:
         run: |
           $name = (Get-Content .\ext\config.w32 | Select-String "EXTENSION\('([^']+)'" | ForEach-Object { $_.Matches[0].Groups[1].Value })
           echo "name=$name" >> $env:GITHUB_OUTPUT
+      - name: Stage extension source for Windows builder
+        shell: pwsh
+        run: |
+          Get-ChildItem -LiteralPath .\ext -Force | Copy-Item -Destination . -Recurse -Force
       - name: Build and Test
         uses: php/php-windows-builder/extension@e03e5d39879adaeb61ed2225f0f4eae7db8c1df8 # 1.8.1
         with:
