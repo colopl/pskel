@@ -55,7 +55,6 @@ jobs:
       matrix:
         runs-on:
           - windows-2022
-          - windows-2025
         version: ['8.1', '8.2', '8.3', '8.4', '8.5']
         arch: ['x64', 'x86']
         ts: ['ts', 'nts']
@@ -86,28 +85,14 @@ jobs:
         run: |
           $name = (Get-Content .\ext\config.w32 | Select-String "EXTENSION\('([^']+)'" | ForEach-Object { $_.Matches[0].Groups[1].Value })
           echo "name=$name" >> $env:GITHUB_OUTPUT
-      - name: Setup PHP
-        id: setup-php
-        uses: php/setup-php-sdk@e2ce1c294f272ed93e8083f14649f5adadf93788 # v0.12
+      - name: Stage extension source for Windows builder
+        shell: pwsh
+        run: |
+          Get-ChildItem -LiteralPath .\ext -Force | Copy-Item -Destination . -Recurse -Force
+      - name: Build and Test
+        uses: php/php-windows-builder/extension@e03e5d39879adaeb61ed2225f0f4eae7db8c1df8 # 1.8.1
         with:
-          version: ${{ matrix.version }}
+          php-version: ${{ matrix.version }}
           arch: ${{ matrix.arch }}
           ts: ${{ matrix.ts }}
-          cache: true
-      - name: Enable Developer Command Prompt
-        uses: ilammy/msvc-dev-cmd@0b201ec74fa43914dc39ae48a89fd1d8cb592756 # v1.13.0
-        with:
-          arch: ${{ matrix.arch }}
-          toolset: ${{ steps.setup-php.outputs.toolset }}
-      - name: phpize and configure
-        run: |
-          cd "ext"
-          phpize
-          ./configure.bat --enable-${{ steps.ext-name.outputs.name }} --with-prefix=${{ steps.setup-php.outputs.prefix }}
-      - name: Build and Test
-        env:
-          TEST_PHP_ARGS: '-q --show-diff'
-        run: |
-          cd "ext"
-          nmake
-          nmake test
+          args: --enable-${{ steps.ext-name.outputs.name }}
