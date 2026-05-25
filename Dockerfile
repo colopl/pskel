@@ -79,30 +79,30 @@ COPY ./ext "/ext"
 RUN chmod +x "/opt/pskel/pskel.sh" \
  && ln -sf "/opt/pskel/pskel.sh" "/usr/local/bin/pskel"
 
-RUN cat <<'EOF' > "/usr/local/bin/docker-entrypoint.sh"
-#!/bin/sh
-set -e
-
-if test -n "${GITHUB_ACTIONS}" && test -d "${PHP_CACHE_DIR}"; then
-  echo "[Pskel > Cache] GitHub Actions environment detected, checking for cached binaries..." >&2
-  for CACHE_ENTRY in "${PHP_CACHE_DIR}"/*; do
-    if test -f "${CACHE_ENTRY}/.build_complete"; then
-      for BIN in "${CACHE_ENTRY}/usr/local/bin/"*; do
-        if test -f "${BIN}"; then
-          BIN_NAME="$(basename "${BIN}")"
-          ln -sf "${BIN}" "/usr/local/bin/${BIN_NAME}"
-          echo "[Pskel > Cache] Restored: ${BIN_NAME}" >&2
-        fi
-      done
-      if test -d "${CACHE_ENTRY}/usr/local/include"; then
-        cp -an "${CACHE_ENTRY}/usr/local/include/"* "/usr/local/include/" 2>/dev/null || true
-      fi
-    fi
-  done
-fi
-
-exec "$@"
-EOF
+RUN printf '%s\n' \
+      '#!/bin/sh' \
+      'set -e' \
+      '' \
+      'if test -n "${GITHUB_ACTIONS}" && test -d "${PHP_CACHE_DIR}"; then' \
+      '  echo "[Pskel > Cache] GitHub Actions environment detected, checking for cached binaries..." >&2' \
+      '  for CACHE_ENTRY in "${PHP_CACHE_DIR}"/*; do' \
+      '    if test -f "${CACHE_ENTRY}/.build_complete"; then' \
+      '      for BIN in "${CACHE_ENTRY}/usr/local/bin/"*; do' \
+      '        if test -f "${BIN}"; then' \
+      '          BIN_NAME="$(basename "${BIN}")"' \
+      '          ln -sf "${BIN}" "/usr/local/bin/${BIN_NAME}"' \
+      '          echo "[Pskel > Cache] Restored: ${BIN_NAME}" >&2' \
+      '        fi' \
+      '      done' \
+      '      if test -d "${CACHE_ENTRY}/usr/local/include"; then' \
+      '        cp -an "${CACHE_ENTRY}/usr/local/include/"* "/usr/local/include/" 2>/dev/null || true' \
+      '      fi' \
+      '    fi' \
+      '  done' \
+      'fi' \
+      '' \
+      'exec "$@"' \
+      > "/usr/local/bin/docker-entrypoint.sh"
 
 RUN chmod +x "/usr/local/bin/docker-entrypoint.sh"
 
