@@ -72,13 +72,14 @@ $ pskel init <YOUR_EXTENSION_NAME> "<COPYRIGHT_HOLDER / VENDOR_NAME>"
 `pskel` コマンドを使用した便利なテスト環境を提供しています：
 
 ```bash
-$ pskel test          # 通常のPHPによるテスト
-$ pskel test debug    # デバッグビルドPHPでのテスト
-$ pskel test gcov     # GCC Gcovによるコードカバレッジ生成
-$ pskel test valgrind # Valgrindによるメモリチェック
-$ pskel test msan     # LLVM MemorySanitizerによるチェック
-$ pskel test asan     # LLVM AddressSanitizerによるチェック
-$ pskel test ubsan    # LLVM UndefinedBehaviorSanitizerによるチェック
+$ pskel test              # 通常のPHPによるテスト
+$ pskel test debug        # デバッグビルドPHPでのテスト
+$ pskel test gcov         # GCC Gcovによるコードカバレッジ生成
+$ pskel test valgrind     # Valgrindによるメモリチェック
+$ pskel test msan         # LLVM MemorySanitizerによるチェック
+$ pskel test asan         # LLVM AddressSanitizerによるチェック
+$ pskel test ubsan        # LLVM UndefinedBehaviorSanitizerによるチェック
+$ pskel clean-build-cache # ビルド済みPHPランタイムとキャッシュを削除
 ```
 
 ### 外部サービスとの連携テスト
