@@ -390,11 +390,13 @@ check_and_restore_cached_php() {
   if test -f "${CACHE_DIR}/.build_complete"; then
     for BIN in php phpize php-config; do
       if test -f "${CACHE_DIR}/usr/local/bin/${PREFIX}-${BIN}"; then
+        remove_path_if_exists "/usr/local/bin/${PREFIX}-${BIN}"
         ln -sf "${CACHE_DIR}/usr/local/bin/${PREFIX}-${BIN}" "/usr/local/bin/${PREFIX}-${BIN}"
       fi
     done
 
     if test -d "${CACHE_DIR}/usr/local/include/${PREFIX}-php"; then
+      remove_path_if_exists "/usr/local/include/${PREFIX}-php"
       ln -sf "${CACHE_DIR}/usr/local/include/${PREFIX}-php" "/usr/local/include/${PREFIX}-php"
     fi
 
