@@ -170,10 +170,11 @@ cmd_usage() {
 Usage: ${0} [task] ...
 
 Available commands:
-    init        create new extension
-    test        test extension
-    build       build PHP runtime
-    coverage    generate code coverage
+    init               create new extension
+    test               test extension
+    build              build PHP runtime
+    clean-build-cache  remove built PHP runtimes and cache
+    coverage           generate code coverage
 EOF
 }
 
@@ -261,6 +262,8 @@ COMPOSER_EOF
 }
 
 cmd_test() {
+  PSKEL_TRACK_ARENA_ALLOC=0
+
   case "${1}" in
     -h|--help)
       cat << EOF
@@ -272,6 +275,7 @@ EOF
       return 0
       ;;
     debug|gcov|valgrind)
+      PSKEL_TRACK_ARENA_ALLOC=1
       CC="$(command -v "gcc")"
       CXX="$(command -v "g++")"
       case "${1}" in
@@ -290,6 +294,7 @@ EOF
       CMD="$(basename "${CC}")-${1}-php"
       ;;
     msan|asan|ubsan)
+      PSKEL_TRACK_ARENA_ALLOC=1
       CC="$(command -v "clang")"
       CXX="$(command -v "clang++")"
       case "${1}" in
@@ -330,6 +335,11 @@ EOF
   done
 
   PSKEL_EXT_DIR="$(get_ext_dir)"
+
+  if test "${PSKEL_TRACK_ARENA_ALLOC}" = "1"; then
+    CFLAGS="${CFLAGS} -DZEND_TRACK_ARENA_ALLOC"
+    CPPFLAGS="${CPPFLAGS} -DZEND_TRACK_ARENA_ALLOC"
+  fi
 
   cd "${PSKEL_EXT_DIR}"
     "${CMD}ize"
@@ -380,11 +390,13 @@ check_and_restore_cached_php() {
   if test -f "${CACHE_DIR}/.build_complete"; then
     for BIN in php phpize php-config; do
       if test -f "${CACHE_DIR}/usr/local/bin/${PREFIX}-${BIN}"; then
+        remove_path_if_exists "/usr/local/bin/${PREFIX}-${BIN}"
         ln -sf "${CACHE_DIR}/usr/local/bin/${PREFIX}-${BIN}" "/usr/local/bin/${PREFIX}-${BIN}"
       fi
     done
 
     if test -d "${CACHE_DIR}/usr/local/include/${PREFIX}-php"; then
+      remove_path_if_exists "/usr/local/include/${PREFIX}-php"
       ln -sf "${CACHE_DIR}/usr/local/include/${PREFIX}-php" "/usr/local/include/${PREFIX}-php"
     fi
 
@@ -439,6 +451,71 @@ cache_php_build() {
 
   touch "${CACHE_DIR}/.build_complete"
   echo "[Pskel > Cache] Cached PHP header and binary: ${PREFIX}-php" >&2
+}
+
+remove_path_if_exists() {
+  if test -e "${1}" || test -L "${1}"; then
+    rm -rf "${1}"
+    echo "[Pskel > Clean] Removed: ${1}" >&2
+  fi
+}
+
+remove_built_php_runtime() {
+  PREFIX="${1}"
+
+  for BIN in php phpize php-config; do
+    remove_path_if_exists "/usr/local/bin/${PREFIX}-${BIN}"
+  done
+
+  remove_path_if_exists "/usr/local/include/${PREFIX}-php"
+}
+
+cmd_clean_build_cache() {
+  case "${1}" in
+    -h|--help)
+      cat << EOF
+Usage: ${0} clean-build-cache
+Environment variables:
+  PHP_CACHE_DIR:        PHP runtime cache directory
+EOF
+      return 0
+      ;;
+    ?*)
+      echo "Error: clean-build-cache does not accept arguments." >&2
+      return 1
+      ;;
+  esac
+
+  for PREFIX in \
+    gcc-debug gcc-gcov gcc-valgrind \
+    clang-msan clang-asan clang-ubsan
+  do
+    remove_built_php_runtime "${PREFIX}"
+  done
+
+  if test -n "${PHP_CACHE_DIR}" && test -d "${PHP_CACHE_DIR}"; then
+    for CACHE_ENTRY in "${PHP_CACHE_DIR}"/*; do
+      if test -f "${CACHE_ENTRY}/.build_complete"; then
+        if test -d "${CACHE_ENTRY}/usr/local/bin"; then
+          for BIN in "${CACHE_ENTRY}/usr/local/bin/"*; do
+            if test -f "${BIN}"; then
+              remove_path_if_exists "/usr/local/bin/$(basename "${BIN}")"
+            fi
+          done
+        fi
+
+        if test -d "${CACHE_ENTRY}/usr/local/include"; then
+          for INCLUDE_DIR in "${CACHE_ENTRY}/usr/local/include/"*; do
+            if test -d "${INCLUDE_DIR}"; then
+              remove_path_if_exists "/usr/local/include/$(basename "${INCLUDE_DIR}")"
+            fi
+          done
+        fi
+
+        remove_path_if_exists "${CACHE_ENTRY}"
+      fi
+    done
+  fi
 }
 
 cmd_build() {
@@ -534,6 +611,7 @@ case "${1}" in
   init) shift; cmd_init "${@}";;
   test) shift; cmd_test "${@}";;
   build) shift; cmd_build "${@}";;
+  clean-build-cache) shift; cmd_clean_build_cache "${@}";;
   coverage) shift; cmd_coverage "${@}";;
   *)
     echo "${0} error: invalid command: '${1}'" >&2

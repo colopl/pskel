@@ -72,13 +72,14 @@ Additional options available in `ext_skel.php` are also supported.
 We provide a convenient testing environment using the `pskel` command:
 
 ```bash
-$ pskel test          # Test with standard PHP
-$ pskel test debug    # Test with debug build PHP
-$ pskel test gcov     # Generate code coverage using GCC Gcov
-$ pskel test valgrind # Memory check using Valgrind
-$ pskel test msan     # Check using LLVM MemorySanitizer
-$ pskel test asan     # Check using LLVM AddressSanitizer
-$ pskel test ubsan    # Check using LLVM UndefinedBehaviorSanitizer
+$ pskel test              # Test with standard PHP
+$ pskel test debug        # Test with debug build PHP
+$ pskel test gcov         # Generate code coverage using GCC Gcov
+$ pskel test valgrind     # Memory check using Valgrind
+$ pskel test msan         # Check using LLVM MemorySanitizer
+$ pskel test asan         # Check using LLVM AddressSanitizer
+$ pskel test ubsan        # Check using LLVM UndefinedBehaviorSanitizer
+$ pskel clean-build-cache # Remove built PHP runtimes and cache
 ```
 
 ### Testing Integration with External Services
