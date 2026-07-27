@@ -2,8 +2,12 @@ ARG PLATFORM=${BUILDPLATFORM:-linux/amd64}
 ARG IMAGE=php
 ARG TAG=8.5-cli-trixie
 ARG SKIP_VALGRIND=0
+# renovate: datasource=github-releases depName=llvm/llvm-project
+ARG LLVM_VERSION=22
 
 FROM --platform=${PLATFORM} ${IMAGE}:${TAG} AS base
+
+ARG LLVM_VERSION
 
 ENV USE_ZEND_ALLOC=0
 ENV USE_TRACKED_ALLOC=1
@@ -22,18 +26,18 @@ RUN docker-php-source extract \
       test -n "${LLVM_APT_CODENAME}" && \
       mkdir -p "/usr/share/keyrings" && \
       curl -fsSL "https://apt.llvm.org/llvm-snapshot.gpg.key" | gpg --dearmor --yes -o "/usr/share/keyrings/llvm-snapshot.gpg" && \
-      echo "deb [signed-by=/usr/share/keyrings/llvm-snapshot.gpg] https://apt.llvm.org/${LLVM_APT_CODENAME}/ llvm-toolchain-${LLVM_APT_CODENAME}-22 main" > "/etc/apt/sources.list.d/llvm.list" && \
+      echo "deb [signed-by=/usr/share/keyrings/llvm-snapshot.gpg] https://apt.llvm.org/${LLVM_APT_CODENAME}/ llvm-toolchain-${LLVM_APT_CODENAME}-${LLVM_VERSION} main" > "/etc/apt/sources.list.d/llvm.list" && \
       apt-get update && \
       apt-get install --no-install-recommends -y \
-        "clang-22" \
-        "libclang-rt-22-dev" "lld-22" \
-        "libc++-22-dev" "libc++abi-22-dev" \
-        "llvm-22" "llvm-22-dev" "llvm-22-runtime" && \
-      update-alternatives --install "/usr/bin/clang" clang "/usr/bin/clang-22" 100 && \
-      update-alternatives --install "/usr/bin/clang++" clang++ "/usr/bin/clang++-22" 100 && \
-      update-alternatives --install "/usr/bin/ld.lld" ld.lld "/usr/bin/ld.lld-22" 100 && \
-      update-alternatives --install "/usr/bin/llvm-symbolizer" llvm-symbolizer "/usr/bin/llvm-symbolizer-22" 100 && \
-      update-alternatives --install "/usr/bin/llvm-config" llvm-config "/usr/bin/llvm-config-22" 100; \
+        "clang-${LLVM_VERSION}" \
+        "libclang-rt-${LLVM_VERSION}-dev" "lld-${LLVM_VERSION}" \
+        "libc++-${LLVM_VERSION}-dev" "libc++abi-${LLVM_VERSION}-dev" \
+        "llvm-${LLVM_VERSION}" "llvm-${LLVM_VERSION}-dev" "llvm-${LLVM_VERSION}-runtime" && \
+      update-alternatives --install "/usr/bin/clang" clang "/usr/bin/clang-${LLVM_VERSION}" 100 && \
+      update-alternatives --install "/usr/bin/clang++" clang++ "/usr/bin/clang++-${LLVM_VERSION}" 100 && \
+      update-alternatives --install "/usr/bin/ld.lld" ld.lld "/usr/bin/ld.lld-${LLVM_VERSION}" 100 && \
+      update-alternatives --install "/usr/bin/llvm-symbolizer" llvm-symbolizer "/usr/bin/llvm-symbolizer-${LLVM_VERSION}" 100 && \
+      update-alternatives --install "/usr/bin/llvm-config" llvm-config "/usr/bin/llvm-config-${LLVM_VERSION}" 100; \
     else \
       apk add --no-cache "bison" "zlib-dev" "sqlite-dev" "libxml2-dev" "linux-headers" \
         "autoconf" "pkgconfig" "make" "gcc" "g++" "musl-dbg" \
@@ -141,6 +145,8 @@ CMD ["sh"]
 
 FROM --platform=${PLATFORM} base AS devcontainer
 
+ARG LLVM_VERSION
+
 RUN if test -f "/etc/debian_version"; then \
       mkdir -p -m 755 "/etc/apt/keyrings" && \
       curl -fsSL "https://cli.github.com/packages/githubcli-archive-keyring.gpg" -o "/etc/apt/keyrings/githubcli-archive-keyring.gpg" && \
@@ -149,10 +155,10 @@ RUN if test -f "/etc/debian_version"; then \
       apt-get update && \
       apt-get install -y --no-install-recommends \
         "gh" "vim" "gdb" \
-        "clang-tools-22" "clang-format-22" "clang-tidy-22" "lldb-22" && \
-      update-alternatives --install "/usr/bin/clang-tidy" clang-tidy "/usr/bin/clang-tidy-22" 100 && \
-      update-alternatives --install "/usr/bin/lldb" lldb "/usr/bin/lldb-22" 100 && \
-      update-alternatives --install "/usr/bin/clang-format" clang-format "/usr/bin/clang-format-22" 100 && \
+        "clang-tools-${LLVM_VERSION}" "clang-format-${LLVM_VERSION}" "clang-tidy-${LLVM_VERSION}" "lldb-${LLVM_VERSION}" && \
+      update-alternatives --install "/usr/bin/clang-tidy" clang-tidy "/usr/bin/clang-tidy-${LLVM_VERSION}" 100 && \
+      update-alternatives --install "/usr/bin/lldb" lldb "/usr/bin/lldb-${LLVM_VERSION}" 100 && \
+      update-alternatives --install "/usr/bin/clang-format" clang-format "/usr/bin/clang-format-${LLVM_VERSION}" 100 && \
       rm -rf "/var/lib/apt/lists/"*; \
     else \
       apk add --no-cache "github-cli"; \
