@@ -1,4 +1,4 @@
-name: Cleanup
+name: 'Cleanup GHCR'
 on:
   schedule:
     - cron: '26 19 * * *'
