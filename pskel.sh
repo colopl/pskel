@@ -68,6 +68,8 @@ get_workspace_dir() {
     echo "${PSKEL_WORKSPACE_DIR}"
   elif PWD_WORKSPACE_DIR="$(find_workspace_dir_from_pwd 2>/dev/null)" && test -n "${PWD_WORKSPACE_DIR}"; then
     echo "${PWD_WORKSPACE_DIR}"
+  elif test -f "/workspace/pskel.sh" && test -f "/workspace/.pskel/LICENSE.template"; then
+    echo "/workspace"
   else
     PSKEL_ROOT_DIR="$(get_pskel_root_dir)" || return 1
     if test -d "${PSKEL_ROOT_DIR}"; then
@@ -694,13 +696,13 @@ EOF
 
   cd "${PSKEL_EXT_DIR}"
     phpize
-    if test "$(php -r "echo PHP_VERSION_ID;")" -lt "80400"; then
+    if test "$(uname -s)" != "Darwin" && test "$(php -r "echo PHP_VERSION_ID;")" -lt "80400"; then
       patch "./build/ltmain.sh" "./../patches/ltmain.sh.patch"
       echo "[Pskel] ltmain.sh patched" >&2
     fi
     ./configure --with-php-config="$(command -v "php-config")" ${EXT_CONFIGURE_OPTS}
     make clean
-    make -j"$(nproc)"
+    make -j"$(nproc 2>/dev/null || sysctl -n hw.ncpu)"
   cd -
 
   if ! php -n -d "extension=${PSKEL_EXT_DIR}/modules/${PKG_EXT_NAME}.so" -m | grep -q "^${PKG_EXT_NAME}\$"; then
