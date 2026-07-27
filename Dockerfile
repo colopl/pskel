@@ -116,6 +116,29 @@ RUN chmod +x "/usr/local/bin/docker-entrypoint.sh"
 ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
 CMD ["bash"]
 
+FROM --platform=${PLATFORM} ${IMAGE}:${TAG} AS builder
+
+ENV LC_ALL="C"
+
+RUN docker-php-source extract \
+ && if test -f "/etc/debian_version"; then \
+      apt-get update && \
+      DEBIAN_FRONTEND="noninteractive" apt-get install -y ${PHPIZE_DEPS} "patch" "zip" && \
+      rm -rf "/var/lib/apt/lists/"*; \
+    else \
+      apk add --no-cache ${PHPIZE_DEPS} "patch" "zip"; \
+    fi
+
+COPY ./.pskel "/opt/pskel/.pskel"
+COPY ./pskel.sh "/opt/pskel/pskel.sh"
+COPY ./patches "/patches"
+COPY ./ext "/ext"
+
+RUN chmod +x "/opt/pskel/pskel.sh" \
+ && ln -sf "/opt/pskel/pskel.sh" "/usr/local/bin/pskel"
+
+CMD ["sh"]
+
 FROM --platform=${PLATFORM} base AS devcontainer
 
 RUN if test -f "/etc/debian_version"; then \

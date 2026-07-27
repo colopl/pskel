@@ -71,6 +71,37 @@ jobs:
             gh release create "${GITHUB_REF_NAME}" --title "${GITHUB_REF_NAME}" --generate-notes --verify-tag
           fi
           gh release upload "${GITHUB_REF_NAME}" "${SRC_ARCHIVE_PATH}" --clobber
+  Linux:
+    needs: Source
+    runs-on: ${{ matrix.runs-on }}
+    env:
+      PSKEL_BUILD_TARGET: builder
+    strategy:
+      matrix:
+        runs-on: ['ubuntu-24.04', 'ubuntu-24.04-arm']
+        version: ['8.1', '8.2', '8.3', '8.4', '8.5']
+        ts: ['cli', 'zts']
+        distro: ['trixie', 'alpine']
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+      - name: Download initialized extension
+        if: needs.Source.outputs.needs-init == 'true'
+        uses: actions/download-artifact@v8
+        with:
+          name: initialized-ext-release
+          path: ext/
+      - name: Build PIE pre-packaged binary
+        run: |
+          docker compose build \
+            --build-arg TAG="${{ matrix.version }}-${{ matrix.ts }}-${{ matrix.distro }}" \
+            shell
+          mkdir -p "dist"
+          docker compose run -v "$(pwd)/dist:/dist" --rm shell pskel package "${GITHUB_REF_NAME}" /dist "${{ needs.Source.outputs.extension-name }}"
+      - name: Upload PIE pre-packaged binary to the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release upload "${GITHUB_REF_NAME}" dist/*.zip --clobber
   Windows:
     needs: Source
     runs-on: windows-2025

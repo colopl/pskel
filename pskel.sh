@@ -176,6 +176,7 @@ Available commands:
     clean-build-cache  remove built PHP runtimes and cache
     coverage           generate code coverage
     coverage-report    merge lcov .info files and generate HTML report
+    package            build and package a PIE pre-packaged binary
 EOF
 }
 
@@ -647,6 +648,97 @@ verify_function_records() {
   done
 }
 
+cmd_package() {
+  case "${1}" in
+    -h|--help)
+      cat << EOF
+Usage: ${0} package <release_tag> [output_dir] [extension_name]
+Build the extension against the environment PHP and package the shared object
+as a PIE pre-packaged binary, using the same naming convention as
+php/pie-ext-binary-builder:
+  php_{ext}-{tag}_php{maj.min}-{arch}-{os}-{libc}[-debug][-zts].zip
+Environment variables:
+  EXT_CONFIGURE_OPTS:    extra ./configure options
+EOF
+      return 0
+      ;;
+    "")
+      echo "Error: release tag is required." >&2
+      return 1
+      ;;
+  esac
+
+  RELEASE_TAG="${1}"
+  OUTPUT_DIR="${2:-.}"
+  PKG_EXT_NAME="${3}"
+
+  PSKEL_EXT_DIR="$(get_ext_dir)"
+
+  if test -z "${PKG_EXT_NAME}"; then
+    PKG_WORKSPACE_DIR="$(get_workspace_dir 2>/dev/null)" || PKG_WORKSPACE_DIR=""
+    if test -n "${PKG_WORKSPACE_DIR}" && test -f "${PKG_WORKSPACE_DIR}/composer.json"; then
+      PKG_EXT_NAME="$(COMPOSER_JSON_PATH="${PKG_WORKSPACE_DIR}/composer.json" php -n -r '
+        $manifest = json_decode((string) file_get_contents(getenv("COMPOSER_JSON_PATH")), true);
+        $name = $manifest["php-ext"]["extension-name"] ?? basename((string) ($manifest["name"] ?? ""));
+        echo preg_replace("/^ext-/", "", (string) $name);
+      ')"
+    fi
+  fi
+  if test -z "${PKG_EXT_NAME}"; then
+    PKG_EXT_NAME="$(sed -n 's/^PHP_NEW_EXTENSION(\[\{0,1\}\([A-Za-z0-9_]*\).*/\1/p' "${PSKEL_EXT_DIR}/config.m4" | head -n 1)"
+  fi
+  if test -z "${PKG_EXT_NAME}"; then
+    echo "Error: could not determine extension name; pass it as the third argument." >&2
+    return 1
+  fi
+
+  cd "${PSKEL_EXT_DIR}"
+    phpize
+    if test "$(php -r "echo PHP_VERSION_ID;")" -lt "80400"; then
+      patch "./build/ltmain.sh" "./../patches/ltmain.sh.patch"
+      echo "[Pskel] ltmain.sh patched" >&2
+    fi
+    ./configure --with-php-config="$(command -v "php-config")" ${EXT_CONFIGURE_OPTS}
+    make clean
+    make -j"$(nproc)"
+  cd -
+
+  if ! php -n -d "extension=${PSKEL_EXT_DIR}/modules/${PKG_EXT_NAME}.so" -m | grep -q "^${PKG_EXT_NAME}\$"; then
+    echo "Error: built ${PKG_EXT_NAME}.so failed to load." >&2
+    return 1
+  fi
+
+  PKG_PHP_MAJMIN="$(php-config --version | cut -d. -f1,2)"
+  case "$(uname -m)" in
+    x86_64|amd64) PKG_ARCH="x86_64";;
+    aarch64|arm64) PKG_ARCH="arm64";;
+    i386|i486|i586|i686) PKG_ARCH="x86";;
+    *) echo "Error: unsupported architecture '$(uname -m)'." >&2; return 1;;
+  esac
+  case "$(uname -s)" in
+    Linux) PKG_OS="linux";;
+    Darwin) PKG_OS="darwin";;
+    *) echo "Error: unsupported operating system '$(uname -s)'." >&2; return 1;;
+  esac
+  if test "${PKG_OS}" = "darwin"; then
+    PKG_LIBC="bsdlibc"
+  elif test -f "/etc/alpine-release" || ldd --version 2>&1 | grep -qi "musl"; then
+    PKG_LIBC="musl"
+  else
+    PKG_LIBC="glibc"
+  fi
+  PKG_DEBUG="$(php -n -r 'echo PHP_DEBUG ? "-debug" : "";')"
+  PKG_ZTS="$(php -n -r 'echo ZEND_THREAD_SAFE ? "-zts" : "";')"
+
+  PKG_NAME="php_${PKG_EXT_NAME}-${RELEASE_TAG}_php${PKG_PHP_MAJMIN}-${PKG_ARCH}-${PKG_OS}-${PKG_LIBC}${PKG_DEBUG}${PKG_ZTS}.zip"
+
+  mkdir -p "${OUTPUT_DIR}"
+  rm -f "${OUTPUT_DIR}/${PKG_NAME}"
+  zip -j "${OUTPUT_DIR}/${PKG_NAME}" "${PSKEL_EXT_DIR}/modules/${PKG_EXT_NAME}.so"
+
+  echo "[Pskel > Package] Created: ${OUTPUT_DIR}/${PKG_NAME}"
+}
+
 if test $# -eq 0; then
   cmd_usage
   exit 1
@@ -660,6 +752,7 @@ case "${1}" in
   clean-build-cache) shift; cmd_clean_build_cache "${@}";;
   coverage) shift; cmd_coverage "${@}";;
   coverage-report) shift; cmd_coverage_report "${@}";;
+  package) shift; cmd_package "${@}";;
   *)
     echo "${0} error: invalid command: '${1}'" >&2
     cmd_usage
