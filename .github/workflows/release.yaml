@@ -55,7 +55,7 @@ jobs:
           gh release upload "${GITHUB_REF_NAME}" "${SRC_ARCHIVE_PATH}" --clobber
   Windows:
     needs: Source
-    runs-on: windows-2022
+    runs-on: windows-2025
     strategy:
       matrix:
         version: ['8.1', '8.2', '8.3', '8.4', '8.5']
