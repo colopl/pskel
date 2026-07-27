@@ -8,18 +8,36 @@ permissions:
 jobs:
   Source:
     runs-on: ubuntu-24.04
+    env:
+      PSKEL_BUILD_TARGET: base
     outputs:
       extension-name: ${{ steps.metadata.outputs.extension-name }}
       version: ${{ steps.metadata.outputs.version }}
+      needs-init: ${{ steps.check.outputs.needs-init }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v7
-      - name: Verify project is initialized
+      - name: Check if initialization is needed
+        id: check
         run: |
           if test -f "ext/.gitkeep" && test "$(cat "ext/.gitkeep")" = "pskel_uninitialized"; then
-            echo "Error: Extension is not initialized, run 'pskel init' before tagging a release." >&2
-            exit 1
+            echo "needs-init=true" >> "${GITHUB_OUTPUT}"
+          else
+            echo "needs-init=false" >> "${GITHUB_OUTPUT}"
           fi
+      - name: Initialize extension with fallback skeleton
+        if: steps.check.outputs.needs-init == 'true'
+        run: |
+          docker compose run -v "$(pwd)/ext:/ext" --rm shell pskel init skeleton
+      - name: Upload initialized extension
+        if: steps.check.outputs.needs-init == 'true'
+        uses: actions/upload-artifact@v7
+        with:
+          name: initialized-ext-release
+          path: ext/
+          retention-days: 1
+      - name: Verify project is initialized
+        run: |
           if ! test -f "composer.json"; then
             echo "Error: composer.json not found, run 'pskel init' before tagging a release." >&2
             exit 1
@@ -64,6 +82,12 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v7
+      - name: Download initialized extension
+        if: needs.Source.outputs.needs-init == 'true'
+        uses: actions/download-artifact@v8
+        with:
+          name: initialized-ext-release
+          path: ext/
       - name: Stage extension source for Windows builder
         shell: pwsh
         run: |
