@@ -14,6 +14,8 @@ on:
 jobs:
   Linux:
     runs-on: ubuntu-24.04
+    env:
+      PSKEL_BUILD_TARGET: base
     strategy:
       matrix:
         platform: ['linux/s390x']
@@ -56,20 +58,20 @@ jobs:
           docker pull --platform "${{ matrix.platform }}" "php:${{ matrix.version }}-${{ matrix.type }}-${{ matrix.distro }}"
       - name: Cut arch name
         id: cut-arch
-        run: echo "arch=$(echo "${{ matrix.platform }}" | sed 's|linux/||')" >> $GITHUB_OUTPUT
+        run: echo "arch=$(echo "${{ matrix.platform }}" | sed 's|linux/||')" >> "${GITHUB_OUTPUT}"
       - name: Generate image tag
         id: image-tag
         run: |
           TAG="ghcr.io/${{ github.repository }}/ci-emulated-cache:${{ steps.cut-arch.outputs.arch }}-${{ matrix.version }}-${{ matrix.type }}-${{ matrix.distro }}-${{ hashFiles('**/Dockerfile', '**/compose.yaml', '**/pskel.sh') }}"
-          echo "tag=${TAG}" >> $GITHUB_OUTPUT
+          echo "tag=${TAG}" >> "${GITHUB_OUTPUT}"
       - name: Check if image exists
         id: check-image
         run: |
           if docker manifest inspect "${{ steps.image-tag.outputs.tag }}" >/dev/null 2>&1; then
-            echo "exists=true" >> $GITHUB_OUTPUT
+            echo "exists=true" >> "${GITHUB_OUTPUT}"
             echo "Image already exists, will reuse: ${{ steps.image-tag.outputs.tag }}"
           else
-            echo "exists=false" >> $GITHUB_OUTPUT
+            echo "exists=false" >> "${GITHUB_OUTPUT}"
             echo "Image does not exist, will build: ${{ steps.image-tag.outputs.tag }}"
           fi
       - name: Build container

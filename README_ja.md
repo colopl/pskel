@@ -35,6 +35,10 @@ Pskelは、PHP拡張機能の開発を迅速かつ効率的に行うためのス
     - macOS
     - Windows
 
+### 📦 PIE による配布
+- `pskel init` が [PIE](https://github.com/php/pie) に必要な `php-ext` メタデータを含む `composer.json` を生成
+- タグを push すると、事前パッケージ済みソースアーカイブと Windows バイナリを添付した GitHub Release を自動作成
+
 ### ☁️ クラウド開発環境
 - [GitHub Codespaces](https://docs.github.com/en/codespaces)のサポート
 - ブラウザのみで開発可能
@@ -111,6 +115,18 @@ bongo.c     |75.0%     20|80.0%     5|    -      0
 
 リポジトリの GitHub Pages を有効にし、 Actions による deploy を有効にすることで `lcov` および `genhtml` コマンドによって生成されたコードカバレッジを GitHub Pages で閲覧できるようになります。
 
+## PIE によるリリース
+
+[PIE](https://github.com/php/pie) は PHP 拡張機能を配布するための標準的なインストーラーです。
+
+`pskel init` は PIE に必要な `php-ext` メタデータを含む `composer.json` を生成します。タグ (例: `1.0.0`) を push すると、 `Release` ワークフローが自動的に以下を行います。
+
+1. タグに対応する GitHub Release の作成
+2. 事前パッケージ済みソースアーカイブ (`php_<extension_name>-<version>-src.tgz`) の添付
+3. [php/php-windows-builder](https://github.com/php/php-windows-builder) による Windows バイナリ (PHP 8.1 - 8.5, x64/x86, TS/NTS) のビルドと添付
+
+`pie install <vendor>/<extension_name>` でインストール可能にするには、リポジトリを [Packagist](https://packagist.org/) に登録してください。
+
 ## よくある質問
 
 ### Q: gdb や lldb などのデバッガは使用できますか？
@@ -119,6 +135,9 @@ A: はい。すべての開発ツールがプリインストールされてい�
 ```bash
 $ gdb --args <php_binary> -dextension=./modules/your_extension_name.so example.php
 ```
+
+### Q: Valgrind はどのようにインストールされますか？
+A: コンテナイメージのビルド時に [sourceware.org](https://sourceware.org/pub/valgrind/) からソースをダウンロードしてビルドされます。バージョンは `Dockerfile` のビルド引数 `VALGRIND_VERSION` で固定されています。事前に取得した `valgrind-<version>.tar.bz2` をリポジトリのトップレベルに配置すると (`.gitignore` により Git 管理外)、ダウンロードの代わりにそれが使用されます。また、ビルド引数 `SKIP_VALGRIND=1` を指定することで Valgrind のビルド自体をスキップできます。Valgrind は Debian ベースのイメージでのみサポートされるため、非 Debian (Alpine など) のイメージをビルドする場合は `SKIP_VALGRIND=1` を明示的に指定しない限りビルドは失敗します。
 
 ### Q: Visual Studio Code 以外のエディタは使用できますか？
 A: 推奨はしませんが、 [Development Containers](https://containers.dev) 対応のエディタであれば使用可能です。

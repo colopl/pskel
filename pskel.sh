@@ -13,7 +13,7 @@ get_pskel_root_dir() {
       ;;
   esac
 
-  if command -v readlink >/dev/null 2>&1; then
+  if type "readlink" >/dev/null 2>&1; then
     PSKEL_PATH="$(readlink -f "${PSKEL_PATH}" 2>/dev/null || printf '%s' "${PSKEL_PATH}")"
   fi
 
@@ -175,6 +175,7 @@ Available commands:
     build              build PHP runtime
     clean-build-cache  remove built PHP runtimes and cache
     coverage           generate code coverage
+    coverage-report    merge lcov .info files and generate HTML report
 EOF
 }
 
@@ -233,7 +234,7 @@ EOF
     "license": "BSD-3-Clause",
     "description": "Describe your extension here",
     "require": {
-        "php": "~8.1.0"
+        "php": ">= 8.1"
     },
     "php-ext": {
         "extension-name": "${EXT_NAME}",
@@ -328,7 +329,7 @@ EOF
   esac
 
   for BIN in "${CMD}" "${CMD}ize" "${CMD}-config"; do
-    if ! command -v "${BIN}" >/dev/null 2>&1; then
+    if ! type "${BIN}" >/dev/null 2>&1; then
       echo "Error: Invalid argument '${CMD}', executable file not found" >&2
       exit 1
     fi
@@ -363,7 +364,7 @@ build_php_if_not_exists() {
     fi
   fi
 
-  if ! command -v "${PREFIX}-php" >/dev/null 2>&1; then
+  if ! type "${PREFIX}-php" >/dev/null 2>&1; then
     CC="${CC}" \
     CXX="${CXX}" \
     CFLAGS="-DZEND_TRACK_ARENA_ALLOC" \
@@ -563,42 +564,87 @@ EOF
   lcov --capture --directory "${PSKEL_EXT_DIR}" \
     ${LCOV_OPTS} \
     --exclude "/usr/local/include/*" \
-    --output-file "${PSKEL_EXT_DIR}/lcov.info"
+    --output-file "${PSKEL_EXT_DIR}/lcov.info.tmp"
 
-  # Convert lcov 2.0 FNL/FNA records to legacy FN/FNDA for CI compatibility.
-  awk 'BEGIN { _n = 0 }
-    /^FNL:/ {
-      split($0, a, /[,:]/)
-      _start[a[2]] = a[3]
-      next
-    }
-    /^FNA:/ {
-      idx = ""
-      cnt = ""
-      rest = $0
-      sub(/^FNA:/, "", rest)
-      split(rest, b, /,/)
-      idx = b[1]
-      cnt = b[2]
-      sub(/^[^,]*,[^,]*,/, "", rest)
-      _fn[_n] = "FN:" _start[idx] "," rest
-      _fnda[_n] = "FNDA:" cnt "," rest
-      _n++
-      next
-    }
-    /^FNF:/ {
-      for (i = 0; i < _n; i++) print _fn[i]
-      for (i = 0; i < _n; i++) print _fnda[i]
-      _n = 0
-      print
-      next
-    }
-    { print }
-  ' "${PSKEL_EXT_DIR}/lcov.info" > "${PSKEL_EXT_DIR}/lcov.info.tmp" \
-    && cat "${PSKEL_EXT_DIR}/lcov.info.tmp" > "${PSKEL_EXT_DIR}/lcov.info" \
+  cat "${PSKEL_EXT_DIR}/lcov.info.tmp" > "${PSKEL_EXT_DIR}/lcov.info" \
     && rm -f "${PSKEL_EXT_DIR}/lcov.info.tmp"
 
   lcov --list "${PSKEL_EXT_DIR}/lcov.info"
+}
+
+cmd_coverage_report() {
+  case "${1}" in
+    -h|--help)
+      cat << EOF
+Usage: ${0} coverage-report <info_dir> <output_dir>
+Merge all lcov .info files in <info_dir> and generate an HTML report in
+<output_dir> (merged data is written to <output_dir>/total.info). Shards must
+be captured with the same container image so lcov versions match.
+Environment variables:
+  GENHTML_OPTS:    genhtml options
+EOF
+      return 0
+      ;;
+  esac
+
+  INFO_DIR="${1}"
+  OUTPUT_DIR="${2}"
+
+  if test -z "${INFO_DIR}" || test -z "${OUTPUT_DIR}"; then
+    echo "Error: info_dir and output_dir are required." >&2
+    return 1
+  fi
+
+  if ! test -d "${INFO_DIR}"; then
+    echo "Error: info_dir '${INFO_DIR}' does not exist." >&2
+    return 1
+  fi
+
+  INFO_FILES=""
+  for INFO_FILE in "${INFO_DIR}"/*.info; do
+    if ! test -f "${INFO_FILE}"; then
+      continue
+    fi
+    if test "$(basename "${INFO_FILE}")" = "total.info"; then
+      echo "[Pskel > Coverage] Skipping previously merged file: ${INFO_FILE}" >&2
+      continue
+    fi
+    INFO_FILES="${INFO_FILES} ${INFO_FILE}"
+  done
+
+  if test -z "${INFO_FILES}"; then
+    echo "Error: no .info files found in '${INFO_DIR}'." >&2
+    return 1
+  fi
+
+  MERGE_ARGS=""
+  for INFO_FILE in ${INFO_FILES}; do
+    verify_function_records "${INFO_FILE}" || return 1
+    lcov --summary "${INFO_FILE}" || return 1
+    MERGE_ARGS="${MERGE_ARGS} -a ${INFO_FILE}"
+  done
+
+  mkdir -p "${OUTPUT_DIR}"
+
+  lcov ${MERGE_ARGS} --output-file "${OUTPUT_DIR}/total.info" || return 1
+
+  verify_function_records "${OUTPUT_DIR}/total.info" || return 1
+
+  genhtml "${OUTPUT_DIR}/total.info" \
+    ${GENHTML_OPTS} \
+    --output-directory "${OUTPUT_DIR}" \
+    --title "Extension code coverage" || return 1
+
+  lcov --summary "${OUTPUT_DIR}/total.info"
+}
+
+verify_function_records() {
+  for RECORD in "FNL:" "FNA:" "FNF:" "FNH:"; do
+    if ! grep -q "^${RECORD}" "${1}"; then
+      echo "Error: missing ${RECORD} records in '${1}'." >&2
+      return 1
+    fi
+  done
 }
 
 if test $# -eq 0; then
@@ -613,6 +659,7 @@ case "${1}" in
   build) shift; cmd_build "${@}";;
   clean-build-cache) shift; cmd_clean_build_cache "${@}";;
   coverage) shift; cmd_coverage "${@}";;
+  coverage-report) shift; cmd_coverage_report "${@}";;
   *)
     echo "${0} error: invalid command: '${1}'" >&2
     cmd_usage
