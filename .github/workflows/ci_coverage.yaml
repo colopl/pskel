@@ -86,12 +86,13 @@ jobs:
           path: ext/
       - name: Build container and run coverage
         run: |
+          rm -f "ext/.gitkeep"
           docker compose build \
             --build-arg TAG="${{ matrix.versions }}-${{ matrix.ts }}-trixie" \
             --build-arg SKIP_VALGRIND=1 \
             shell
           docker compose run --rm shell pskel coverage
-          mv "ext/lcov.info" "${{ matrix.platform }}_${{ matrix.versions }}_${{ matrix.ts }}_lcov.info"
+          cp "ext/lcov.info" "${{ matrix.platform }}_${{ matrix.versions }}_${{ matrix.ts }}_lcov.info"
       - name: Upload coverage artifact
         uses: actions/upload-artifact@v7
         with:
