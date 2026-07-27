@@ -90,9 +90,8 @@ jobs:
             --build-arg TAG="${{ matrix.versions }}-${{ matrix.ts }}-trixie" \
             --build-arg SKIP_VALGRIND=1 \
             shell
-          touch "lcov.info"
-          docker compose run -v "$(pwd)/lcov.info:/ext/lcov.info" --rm shell pskel coverage
-          mv "lcov.info" "${{ matrix.platform }}_${{ matrix.versions }}_${{ matrix.ts }}_lcov.info"
+          docker compose run --rm shell pskel coverage
+          mv "ext/lcov.info" "${{ matrix.platform }}_${{ matrix.versions }}_${{ matrix.ts }}_lcov.info"
       - name: Upload coverage artifact
         uses: actions/upload-artifact@v7
         with:
