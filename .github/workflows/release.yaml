@@ -1,0 +1,88 @@
+name: Release
+on:
+  push:
+    tags:
+      - '*'
+permissions:
+  contents: write
+jobs:
+  Source:
+    runs-on: ubuntu-24.04
+    outputs:
+      extension-name: ${{ steps.metadata.outputs.extension-name }}
+      version: ${{ steps.metadata.outputs.version }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+      - name: Verify project is initialized
+        run: |
+          if test -f "ext/.gitkeep" && test "$(cat "ext/.gitkeep")" = "pskel_uninitialized"; then
+            echo "Error: Extension is not initialized, run 'pskel init' before tagging a release." >&2
+            exit 1
+          fi
+          if ! test -f "composer.json"; then
+            echo "Error: composer.json not found, run 'pskel init' before tagging a release." >&2
+            exit 1
+          fi
+      - name: Extract release metadata
+        id: metadata
+        run: |
+          EXT_NAME="$(jq -r '."php-ext"."extension-name" // empty' "composer.json")"
+          if test -z "${EXT_NAME}"; then
+            echo "Error: php-ext.extension-name not found in composer.json." >&2
+            exit 1
+          fi
+          RELEASE_VERSION="${GITHUB_REF_NAME#v}"
+          echo "extension-name=${EXT_NAME}" >> "${GITHUB_OUTPUT}"
+          echo "version=${RELEASE_VERSION}" >> "${GITHUB_OUTPUT}"
+      - name: Create source package
+        id: source
+        env:
+          EXT_NAME: ${{ steps.metadata.outputs.extension-name }}
+          RELEASE_VERSION: ${{ steps.metadata.outputs.version }}
+        run: |
+          SRC_ARCHIVE_PATH="${RUNNER_TEMP}/php_${EXT_NAME}-${RELEASE_VERSION}-src.tgz"
+          git archive --format="tar.gz" --prefix="${EXT_NAME}-${RELEASE_VERSION}/" --output "${SRC_ARCHIVE_PATH}" HEAD
+          echo "archive-path=${SRC_ARCHIVE_PATH}" >> "${GITHUB_OUTPUT}"
+      - name: Create GitHub release and upload source package
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SRC_ARCHIVE_PATH: ${{ steps.source.outputs.archive-path }}
+        run: |
+          if ! gh release view "${GITHUB_REF_NAME}" >/dev/null 2>&1; then
+            gh release create "${GITHUB_REF_NAME}" --title "${GITHUB_REF_NAME}" --generate-notes --verify-tag
+          fi
+          gh release upload "${GITHUB_REF_NAME}" "${SRC_ARCHIVE_PATH}" --clobber
+  Windows:
+    needs: Source
+    runs-on: windows-2022
+    strategy:
+      matrix:
+        version: ['8.1', '8.2', '8.3', '8.4', '8.5']
+        arch: ['x64', 'x86']
+        ts: ['ts', 'nts']
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+      - name: Stage extension source for Windows builder
+        shell: pwsh
+        run: |
+          Get-ChildItem -LiteralPath .\ext -Force | Copy-Item -Destination . -Recurse -Force
+      - name: Build extension
+        uses: php/php-windows-builder/extension@e03e5d39879adaeb61ed2225f0f4eae7db8c1df8 # 1.8.1
+        with:
+          php-version: ${{ matrix.version }}
+          arch: ${{ matrix.arch }}
+          ts: ${{ matrix.ts }}
+          args: --enable-${{ needs.Source.outputs.extension-name }}
+  Upload_Windows:
+    needs:
+      - Source
+      - Windows
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Upload Windows binaries to the release
+        uses: php/php-windows-builder/release@e03e5d39879adaeb61ed2225f0f4eae7db8c1df8 # 1.8.1
+        with:
+          release: ${{ github.ref_name }}
+          token: ${{ secrets.GITHUB_TOKEN }}

@@ -2,7 +2,6 @@
 /.dockerignore export-ignore
 /.editorconfig export-ignore
 /.github export-ignore
-/.gitmodules export-ignore
 /.vscode export-ignore
 /compose.yaml export-ignore
 /docker export-ignore
@@ -10,4 +9,4 @@
 /patches export-ignore
 /pskel.sh export-ignore
 /README_ja.md export-ignore
-/third_party export-ignore
+/README.md export-ignore
