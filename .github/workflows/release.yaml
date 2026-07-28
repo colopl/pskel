@@ -28,11 +28,13 @@ jobs:
         if: steps.check.outputs.needs-init == 'true'
         run: |
           docker compose run -v "$(pwd)/ext:/ext" --rm shell pskel init skeleton
+      - name: Archive prepared extension
+        run: tar -cf "${RUNNER_TEMP}/release-ext.tar" "ext"
       - name: Upload prepared extension
         uses: actions/upload-artifact@v7
         with:
           name: release-ext
-          path: ext/
+          path: ${{ runner.temp }}/release-ext.tar
           retention-days: 1
       - name: Verify project is initialized
         run: |
@@ -57,7 +59,7 @@ jobs:
           EXT_NAME: ${{ steps.metadata.outputs.extension-name }}
           RELEASE_VERSION: ${{ steps.metadata.outputs.version }}
         run: |
-          SRC_ARCHIVE_PATH="${RUNNER_TEMP}/php_${EXT_NAME}-${RELEASE_VERSION}-src.tgz"
+          SRC_ARCHIVE_PATH="${RUNNER_TEMP}/php_${EXT_NAME}-${GITHUB_REF_NAME}-src.tgz"
           git archive --format="tar.gz" --prefix="${EXT_NAME}-${RELEASE_VERSION}/" --output "${SRC_ARCHIVE_PATH}" HEAD
           echo "archive-path=${SRC_ARCHIVE_PATH}" >> "${GITHUB_OUTPUT}"
       - name: Create GitHub release and upload source package
@@ -89,7 +91,9 @@ jobs:
         uses: actions/download-artifact@v8
         with:
           name: release-ext
-          path: ext/
+          path: ${{ runner.temp }}/release-ext
+      - name: Extract prepared extension
+        run: tar -xf "${RUNNER_TEMP}/release-ext/release-ext.tar" -C "${GITHUB_WORKSPACE}"
       - name: Build PIE pre-packaged binary
         run: |
           docker compose build \
@@ -118,7 +122,9 @@ jobs:
         uses: actions/download-artifact@v8
         with:
           name: release-ext
-          path: ext/
+          path: ${{ runner.temp }}/release-ext
+      - name: Extract prepared extension
+        run: tar -xf "${RUNNER_TEMP}/release-ext/release-ext.tar" -C "${GITHUB_WORKSPACE}"
       - name: Setup PHP
         uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # 2.37.2
         with:
@@ -151,7 +157,10 @@ jobs:
         uses: actions/download-artifact@v8
         with:
           name: release-ext
-          path: ext/
+          path: ${{ runner.temp }}/release-ext
+      - name: Extract prepared extension
+        shell: pwsh
+        run: tar -xf "$env:RUNNER_TEMP\release-ext\release-ext.tar" -C "$env:GITHUB_WORKSPACE"
       - name: Stage extension source for Windows builder
         shell: pwsh
         run: |
