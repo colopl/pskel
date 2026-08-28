@@ -3,7 +3,7 @@ ARG IMAGE=php
 ARG TAG=8.5-cli-trixie
 ARG SKIP_VALGRIND=0
 # renovate: datasource=github-releases depName=llvm/llvm-project
-ARG LLVM_VERSION=22
+ARG LLVM_VERSION=23
 
 FROM --platform=${PLATFORM} ${IMAGE}:${TAG} AS base
 
