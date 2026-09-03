@@ -139,6 +139,9 @@ $ gdb --args <php_binary> -dextension=./modules/your_extension_name.so example.p
 ### Q: Valgrind はどのようにインストールされますか？
 A: コンテナイメージのビルド時に [sourceware.org](https://sourceware.org/pub/valgrind/) からソースをダウンロードしてビルドされます。バージョンは `Dockerfile` のビルド引数 `VALGRIND_VERSION` で固定されています。事前に取得した `valgrind-<version>.tar.bz2` をリポジトリのトップレベルに配置すると (`.gitignore` により Git 管理外)、ダウンロードの代わりにそれが使用されます。また、ビルド引数 `SKIP_VALGRIND=1` を指定することで Valgrind のビルド自体をスキップできます。Valgrind は Debian ベースのイメージでのみサポートされるため、非 Debian (Alpine など) のイメージをビルドする場合は `SKIP_VALGRIND=1` を明示的に指定しない限りビルドは失敗します。
 
+### Q: LLVM はどのようにインストールされますか？
+A: Debian ベースのイメージでは、コンテナイメージのビルド時に [apt.llvm.org](https://apt.llvm.org/) から LLVM ツールチェインをインストールします。メジャーバージョンは `Dockerfile` のビルド引数 `LLVM_VERSION`、パッケージ一覧はビルド引数 `LLVM_PACKAGES` で固定されています。リポジトリのトップレベルに `.deb` ファイルと `Packages` / `Release` インデックスを含む `llvm-debs/<codename>-<arch>/` ディレクトリ (例: `llvm-debs/trixie-amd64/`) を配置すると (`.gitignore` により Git 管理外)、apt.llvm.org の代わりにそれがローカル apt リポジトリとして使用されます。CI の Prepare ワークフローはこのパッケージ群をアーキテクチャごとに 1 回だけ事前取得し、GitHub Actions cache 経由で Linux のビルド job に共有するため、ビルド job は apt.llvm.org からダウンロードを行いません。
+
 ### Q: Visual Studio Code 以外のエディタは使用できますか？
 A: 推奨はしませんが、 [Development Containers](https://containers.dev) 対応のエディタであれば使用可能です。
 

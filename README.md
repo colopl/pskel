@@ -138,6 +138,9 @@ $ gdb --args <php_binary> -dextension=./modules/your_extension_name.so example.p
 ### Q: How is Valgrind installed?
 A: Valgrind is downloaded from [sourceware.org](https://sourceware.org/pub/valgrind/) and built from source when the container image is built. The version is pinned by the `VALGRIND_VERSION` build argument in the `Dockerfile`. If you place a pre-fetched `valgrind-<version>.tar.bz2` in the repository root (excluded from Git via `.gitignore`), it is used instead of downloading. Passing the `SKIP_VALGRIND=1` build argument skips building Valgrind entirely. Valgrind is only supported on Debian-based images: building a non-Debian (e.g. Alpine) image fails unless `SKIP_VALGRIND=1` is passed explicitly.
 
+### Q: How is LLVM installed?
+A: On Debian-based images, the LLVM toolchain is installed from [apt.llvm.org](https://apt.llvm.org/) when the container image is built. The major version is pinned by the `LLVM_VERSION` build argument and the package list by the `LLVM_PACKAGES` build argument in the `Dockerfile`. If a directory `llvm-debs/<codename>-<arch>/` (e.g. `llvm-debs/trixie-amd64/`) containing the `.deb` files together with `Packages` and `Release` indexes exists in the repository root (excluded from Git via `.gitignore`), it is used as a local apt repository instead of apt.llvm.org. The CI Prepare workflow pre-fetches these packages once per architecture and shares them with the Linux build jobs through the GitHub Actions cache, so that the build jobs never download from apt.llvm.org.
+
 ### Q: Can I use editors other than Visual Studio Code?
 A: While not recommended, you can use any editor that supports [Development Containers](https://containers.dev).
 

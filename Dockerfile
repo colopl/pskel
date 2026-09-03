@@ -4,17 +4,21 @@ ARG TAG=8.5-cli-trixie
 ARG SKIP_VALGRIND=0
 # renovate: datasource=github-releases depName=llvm/llvm-project
 ARG LLVM_VERSION=23
+# LLVM apt packages installed into the base image ("@" is replaced with LLVM_VERSION).
+ARG LLVM_PACKAGES="clang-@ libclang-rt-@-dev lld-@ libc++-@-dev libc++abi-@-dev llvm-@ llvm-@-dev llvm-@-runtime"
 
 FROM --platform=${PLATFORM} ${IMAGE}:${TAG} AS base
 
 ARG LLVM_VERSION
+ARG LLVM_PACKAGES
 
 ENV USE_ZEND_ALLOC=0
 ENV USE_TRACKED_ALLOC=1
 ENV ZEND_DONT_UNLOAD_MODULES=1
 ENV LC_ALL="C"
 
-RUN docker-php-source extract \
+RUN --mount=type=bind,source=.,target=/build_context \
+    docker-php-source extract \
  && if test -f "/etc/debian_version"; then \
       apt-get update  && \
       DEBIAN_FRONTEND="noninteractive" apt-get install -y "bison" "re2c" "zlib1g-dev" "libsqlite3-dev" "libxml2-dev" \
@@ -24,15 +28,25 @@ RUN docker-php-source extract \
         "unzip" && \
       LLVM_APT_CODENAME="$(. "/etc/os-release" && printf '%s' "${VERSION_CODENAME}")" && \
       test -n "${LLVM_APT_CODENAME}" && \
+      LLVM_APT_KEYRING="/usr/share/keyrings/llvm-snapshot.gpg" && \
+      LLVM_APT_SOURCE="deb [signed-by=${LLVM_APT_KEYRING}] https://apt.llvm.org/${LLVM_APT_CODENAME}/ llvm-toolchain-${LLVM_APT_CODENAME}-${LLVM_VERSION} main" && \
+      LLVM_DEBS_DIR="/build_context/llvm-debs/${LLVM_APT_CODENAME}-$(dpkg --print-architecture)" && \
       mkdir -p "/usr/share/keyrings" && \
-      curl -fsSL "https://apt.llvm.org/llvm-snapshot.gpg.key" | gpg --dearmor --yes -o "/usr/share/keyrings/llvm-snapshot.gpg" && \
-      echo "deb [signed-by=/usr/share/keyrings/llvm-snapshot.gpg] https://apt.llvm.org/${LLVM_APT_CODENAME}/ llvm-toolchain-${LLVM_APT_CODENAME}-${LLVM_VERSION} main" > "/etc/apt/sources.list.d/llvm.list" && \
+      if test -f "${LLVM_DEBS_DIR}/llvm-snapshot.gpg"; then \
+        cp "${LLVM_DEBS_DIR}/llvm-snapshot.gpg" "${LLVM_APT_KEYRING}"; \
+      else \
+        curl -fsSL "https://apt.llvm.org/llvm-snapshot.gpg.key" | gpg --dearmor --yes -o "${LLVM_APT_KEYRING}"; \
+      fi && \
+      if test -f "${LLVM_DEBS_DIR}/Packages"; then \
+        echo "[Pskel] Installing LLVM ${LLVM_VERSION} from pre-fetched apt packages in ${LLVM_DEBS_DIR}." >&2 && \
+        echo "deb [trusted=yes] file:${LLVM_DEBS_DIR} ./" > "/etc/apt/sources.list.d/llvm.list"; \
+      else \
+        echo "[Pskel] Installing LLVM ${LLVM_VERSION} from apt.llvm.org." >&2 && \
+        echo "${LLVM_APT_SOURCE}" > "/etc/apt/sources.list.d/llvm.list"; \
+      fi && \
       apt-get update && \
-      apt-get install --no-install-recommends -y \
-        "clang-${LLVM_VERSION}" \
-        "libclang-rt-${LLVM_VERSION}-dev" "lld-${LLVM_VERSION}" \
-        "libc++-${LLVM_VERSION}-dev" "libc++abi-${LLVM_VERSION}-dev" \
-        "llvm-${LLVM_VERSION}" "llvm-${LLVM_VERSION}-dev" "llvm-${LLVM_VERSION}-runtime" && \
+      apt-get install --no-install-recommends -y $(printf '%s' "${LLVM_PACKAGES}" | sed "s/@/${LLVM_VERSION}/g") && \
+      echo "${LLVM_APT_SOURCE}" > "/etc/apt/sources.list.d/llvm.list" && \
       update-alternatives --install "/usr/bin/clang" clang "/usr/bin/clang-${LLVM_VERSION}" 100 && \
       update-alternatives --install "/usr/bin/clang++" clang++ "/usr/bin/clang++-${LLVM_VERSION}" 100 && \
       update-alternatives --install "/usr/bin/ld.lld" ld.lld "/usr/bin/ld.lld-${LLVM_VERSION}" 100 && \

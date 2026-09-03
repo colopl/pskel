@@ -12,6 +12,14 @@ on:
       archive_name:
         required: true
         type: string
+      llvm_cache_key_amd64:
+        description: actions/cache key of the pre-fetched LLVM apt packages for amd64 (from ci_prepare.yaml)
+        required: true
+        type: string
+      llvm_cache_key_arm64:
+        description: actions/cache key of the pre-fetched LLVM apt packages for arm64 (from ci_prepare.yaml)
+        required: true
+        type: string
 jobs:
   Linux:
     env:
@@ -36,6 +44,45 @@ jobs:
           ARCHIVE_PATH="${RUNNER_TEMP}/source-archive/${ARCHIVE_NAME}"
           tar -xzf "${ARCHIVE_PATH}" --strip-components=1 -C "${GITHUB_WORKSPACE}"
           rm -f "${ARCHIVE_PATH}"
+      - name: Detect toolchain cache keys
+        if: matrix.distro != 'alpine'
+        id: toolchain
+        env:
+          LLVM_CACHE_KEY_AMD64: ${{ inputs.llvm_cache_key_amd64 }}
+          LLVM_CACHE_KEY_ARM64: ${{ inputs.llvm_cache_key_arm64 }}
+        run: |
+          VALGRIND_VERSION="$(sed -n 's/^ARG VALGRIND_VERSION=//p' "Dockerfile" | head -n 1)"
+          if test -z "${VALGRIND_VERSION}"; then
+            echo "Error: VALGRIND_VERSION not found in Dockerfile." >&2
+            exit 1
+          fi
+          ARCH="$(dpkg --print-architecture)"
+          case "${ARCH}" in
+            amd64) LLVM_CACHE_KEY="${LLVM_CACHE_KEY_AMD64}";;
+            arm64) LLVM_CACHE_KEY="${LLVM_CACHE_KEY_ARM64}";;
+            *) echo "Error: no LLVM cache key for architecture ${ARCH}." >&2; exit 1;;
+          esac
+          if test -z "${LLVM_CACHE_KEY}"; then
+            echo "Error: empty LLVM cache key for architecture ${ARCH}." >&2
+            exit 1
+          fi
+          echo "valgrind_version=${VALGRIND_VERSION}" >> "${GITHUB_OUTPUT}"
+          echo "arch=${ARCH}" >> "${GITHUB_OUTPUT}"
+          echo "llvm_cache_key=${LLVM_CACHE_KEY}" >> "${GITHUB_OUTPUT}"
+      - name: Restore Valgrind tarball from cache
+        if: matrix.distro != 'alpine'
+        uses: actions/cache/restore@v6
+        with:
+          path: valgrind-${{ steps.toolchain.outputs.valgrind_version }}.tar.bz2
+          key: valgrind-tarball-${{ steps.toolchain.outputs.valgrind_version }}
+          fail-on-cache-miss: true
+      - name: Restore LLVM apt packages from cache
+        if: matrix.distro != 'alpine'
+        uses: actions/cache/restore@v6
+        with:
+          path: llvm-debs/${{ matrix.distro }}-${{ steps.toolchain.outputs.arch }}
+          key: ${{ steps.toolchain.outputs.llvm_cache_key }}
+          fail-on-cache-miss: true
       - name: Pull PHP container image
         id: pull-image
         run: |
