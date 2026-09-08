@@ -16,6 +16,14 @@ on:
       archive_name:
         required: true
         type: string
+      llvm_cache_key_amd64:
+        description: actions/cache key of the pre-fetched LLVM apt packages for amd64 (from ci_prepare.yaml)
+        required: true
+        type: string
+      llvm_cache_key_arm64:
+        description: actions/cache key of the pre-fetched LLVM apt packages for arm64 (from ci_prepare.yaml)
+        required: true
+        type: string
 jobs:
   init:
     runs-on: ubuntu-24.04
@@ -44,9 +52,20 @@ jobs:
           else
             echo "needs-init=false" >> "${GITHUB_OUTPUT}"
           fi
+      - name: Restore LLVM apt packages from cache
+        if: steps.check.outputs.needs-init == 'true'
+        uses: actions/cache/restore@v6
+        with:
+          path: llvm-debs/trixie-amd64
+          key: ${{ inputs.llvm_cache_key_amd64 }}
+          fail-on-cache-miss: true
       - name: Initialize extension
         if: steps.check.outputs.needs-init == 'true'
         run: |
+          # pskel init only needs the bundled PHP, so skip the Valgrind source build (and its download).
+          docker compose build \
+            --build-arg SKIP_VALGRIND=1 \
+            shell
           docker compose run -v "$(pwd)/ext:/ext" --rm shell pskel init skeleton
       - name: Upload initialized extension
         if: steps.check.outputs.needs-init == 'true'
@@ -84,6 +103,12 @@ jobs:
         with:
           name: initialized-ext-coverage
           path: ext/
+      - name: Restore LLVM apt packages from cache
+        uses: actions/cache/restore@v6
+        with:
+          path: llvm-debs/trixie-${{ matrix.platform == 'ubuntu-24.04-arm' && 'arm64' || 'amd64' }}
+          key: ${{ matrix.platform == 'ubuntu-24.04-arm' && inputs.llvm_cache_key_arm64 || inputs.llvm_cache_key_amd64 }}
+          fail-on-cache-miss: true
       - name: Build container and run coverage
         run: |
           rm -f "ext/.gitkeep"
@@ -135,6 +160,12 @@ jobs:
         with:
           name: initialized-ext-coverage
           path: ext/
+      - name: Restore LLVM apt packages from cache
+        uses: actions/cache/restore@v6
+        with:
+          path: llvm-debs/trixie-amd64
+          key: ${{ inputs.llvm_cache_key_amd64 }}
+          fail-on-cache-miss: true
       - name: Build container
         run: |
           docker compose build \

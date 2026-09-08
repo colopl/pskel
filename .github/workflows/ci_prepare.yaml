@@ -18,17 +18,26 @@ on:
       llvm_cache_key_arm64:
         description: actions/cache key of the pre-fetched LLVM apt packages for arm64
         value: ${{ jobs.prepare.outputs.llvm_cache_key_arm64 }}
+      llvm_cache_key_s390x:
+        description: actions/cache key of the pre-fetched LLVM apt packages for s390x (empty when they could not be fetched)
+        value: ${{ jobs.prepare.outputs.llvm_cache_key_s390x }}
 jobs:
   prepare:
     runs-on: ubuntu-24.04
     env:
       LLVM_APT_CODENAME: trixie
+      # Architectures whose LLVM apt packages are pre-fetched once here and shared with every Linux container build.
+      LLVM_ARCHITECTURES: amd64 arm64 s390x
+      # Subset of LLVM_ARCHITECTURES that is best-effort: when apt.llvm.org cannot provide their packages, only the
+      # affected (emulated) build jobs fall back to installing from apt.llvm.org instead of the whole CI run failing.
+      LLVM_OPTIONAL_ARCHITECTURES: s390x
     outputs:
       artifact_name: ${{ steps.metadata.outputs.artifact_name }}
       artifact_run_id: ${{ steps.metadata.outputs.artifact_run_id }}
       archive_name: ${{ steps.metadata.outputs.archive_name }}
-      llvm_cache_key_amd64: ${{ steps.llvm.outputs.cache_key_amd64 }}
-      llvm_cache_key_arm64: ${{ steps.llvm.outputs.cache_key_arm64 }}
+      llvm_cache_key_amd64: ${{ steps.llvm-keys.outputs.cache_key_amd64 }}
+      llvm_cache_key_arm64: ${{ steps.llvm-keys.outputs.cache_key_arm64 }}
+      llvm_cache_key_s390x: ${{ steps.llvm-keys.outputs.cache_key_s390x }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v7
@@ -69,10 +78,19 @@ jobs:
             echo "Error: LLVM_VERSION or LLVM_PACKAGES not found in Dockerfile." >&2
             exit 1
           fi
-          PACKAGES_HASH="$(printf '%s' "${LLVM_PACKAGES}" | sed "s/@/${LLVM_VERSION}/g" | sha256sum | cut -c1-12)"
+          if ! printf '%s\n' "${LLVM_VERSION}" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+$'; then
+            echo "Error: LLVM_VERSION must be a full release version (major.minor.patch), got '${LLVM_VERSION}'." >&2
+            exit 1
+          fi
+          LLVM_MAJOR="${LLVM_VERSION%%.*}"
+          PACKAGES_HASH="$(printf '%s' "${LLVM_PACKAGES}" | sed "s/@/${LLVM_MAJOR}/g" | sha256sum | cut -c1-12)"
           echo "version=${LLVM_VERSION}" >> "${GITHUB_OUTPUT}"
+          echo "major=${LLVM_MAJOR}" >> "${GITHUB_OUTPUT}"
           echo "packages=${LLVM_PACKAGES}" >> "${GITHUB_OUTPUT}"
-          for ARCH in amd64 arm64; do
+          # The full release version (bumped by Renovate from the LLVM GitHub releases) is part of the key, so a new
+          # LLVM release or a change of the package list are the only events that invalidate the cache and make this
+          # job download from apt.llvm.org again.
+          for ARCH in ${LLVM_ARCHITECTURES}; do
             CACHE_KEY="llvm-debs-${LLVM_APT_CODENAME}-${ARCH}-${LLVM_VERSION}-${PACKAGES_HASH}"
             echo "${ARCH}: ${CACHE_KEY}"
             echo "cache_key_${ARCH}=${CACHE_KEY}" >> "${GITHUB_OUTPUT}"
@@ -87,24 +105,31 @@ jobs:
         with:
           path: llvm-debs/${{ env.LLVM_APT_CODENAME }}-arm64
           key: ${{ steps.llvm.outputs.cache_key_arm64 }}
+      - name: Cache LLVM apt packages (s390x)
+        uses: actions/cache@v6
+        with:
+          path: llvm-debs/${{ env.LLVM_APT_CODENAME }}-s390x
+          key: ${{ steps.llvm.outputs.cache_key_s390x }}
       - name: Download LLVM apt packages if not cached
         env:
           LLVM_VERSION: ${{ steps.llvm.outputs.version }}
+          LLVM_MAJOR: ${{ steps.llvm.outputs.major }}
           LLVM_PACKAGES: ${{ steps.llvm.outputs.packages }}
         run: |
-          LLVM_ARCHITECTURES=""
+          LLVM_FETCH_ARCHITECTURES=""
           DOCKER_ARGS=()
-          for ARCH in amd64 arm64; do
+          for ARCH in ${LLVM_ARCHITECTURES}; do
             LLVM_DEBS_DIR="llvm-debs/${LLVM_APT_CODENAME}-${ARCH}"
             if test -f "${LLVM_DEBS_DIR}/Packages"; then
               echo "LLVM apt packages for ${ARCH} restored from cache."
               continue
             fi
             mkdir -p "${LLVM_DEBS_DIR}"
-            LLVM_ARCHITECTURES="${LLVM_ARCHITECTURES} ${ARCH}"
+            LLVM_FETCH_ARCHITECTURES="${LLVM_FETCH_ARCHITECTURES} ${ARCH}"
             DOCKER_ARGS+=(-v "${PWD}/${LLVM_DEBS_DIR}:/out/${ARCH}")
           done
-          if test -z "${LLVM_ARCHITECTURES}"; then
+          if test -z "${LLVM_FETCH_ARCHITECTURES}"; then
+            echo "All LLVM apt packages restored from cache, apt.llvm.org is not contacted."
             exit 0
           fi
           LLVM_APT_KEYRING="${RUNNER_TEMP}/llvm-snapshot.gpg"
@@ -113,36 +138,89 @@ jobs:
           cat > "${RUNNER_TEMP}/fetch-llvm-debs.sh" <<'EOF'
           export DEBIAN_FRONTEND="noninteractive"
           LLVM_APT_KEYRING="/usr/share/keyrings/llvm-snapshot.gpg"
-          LLVM_APT_PACKAGES="$(printf '%s' "${LLVM_PACKAGES}" | sed "s/@/${LLVM_VERSION}/g")"
+          LLVM_APT_PACKAGES="$(printf '%s' "${LLVM_PACKAGES}" | sed "s/@/${LLVM_MAJOR}/g")"
           apt-get update
           apt-get install -y --no-install-recommends "ca-certificates" "apt-utils"
-          for ARCH in ${LLVM_ARCHITECTURES}; do
+          for ARCH in ${LLVM_FETCH_ARCHITECTURES}; do
             dpkg --add-architecture "${ARCH}"
           done
-          echo "deb [signed-by=${LLVM_APT_KEYRING}] https://apt.llvm.org/${LLVM_APT_CODENAME}/ llvm-toolchain-${LLVM_APT_CODENAME}-${LLVM_VERSION} main" \
+          echo "deb [signed-by=${LLVM_APT_KEYRING}] https://apt.llvm.org/${LLVM_APT_CODENAME}/ llvm-toolchain-${LLVM_APT_CODENAME}-${LLVM_MAJOR} main" \
             > "/etc/apt/sources.list.d/llvm.list"
-          apt-get -o Acquire::Retries=5 update
-          for ARCH in ${LLVM_ARCHITECTURES}; do
-            echo "[Pskel] Downloading LLVM ${LLVM_VERSION} apt packages for ${ARCH}." >&2
+          # A missing index of an optional architecture must not abort the whole fetch: the download below fails only
+          # for that architecture.
+          apt-get -o Acquire::Retries=5 update \
+            || echo "::warning::apt-get update reported errors, continuing with the package indexes that could be fetched."
+          for ARCH in ${LLVM_FETCH_ARCHITECTURES}; do
+            echo "[Pskel] Downloading LLVM ${LLVM_MAJOR} apt packages for ${ARCH}." >&2
             rm -f /var/cache/apt/archives/*.deb
-            apt-get -o Acquire::Retries=5 install -y --no-install-recommends --download-only \
-              $(for PACKAGE in ${LLVM_APT_PACKAGES}; do printf '%s:%s ' "${PACKAGE}" "${ARCH}"; done)
+            if ! apt-get -o Acquire::Retries=5 install -y --no-install-recommends --download-only \
+                $(for PACKAGE in ${LLVM_APT_PACKAGES}; do printf '%s:%s ' "${PACKAGE}" "${ARCH}"; done); then
+              case " ${LLVM_OPTIONAL_ARCHITECTURES} " in
+                *" ${ARCH} "*)
+                  echo "::warning::Could not download the LLVM ${LLVM_MAJOR} apt packages for ${ARCH} from apt.llvm.org, container builds for ${ARCH} will install directly from apt.llvm.org."
+                  continue
+                  ;;
+                *)
+                  exit 1
+                  ;;
+              esac
+            fi
             find /var/cache/apt/archives -maxdepth 1 -name '*.deb' \
               \( -name "*_${ARCH}.deb" -o -name '*_all.deb' \) -exec cp -t "/out/${ARCH}/" {} +
             cp "${LLVM_APT_KEYRING}" "/out/${ARCH}/"
             cd "/out/${ARCH}"
             apt-ftparchive packages . > "Packages"
             apt-ftparchive release . > "Release"
+            APT_VERSION="$(sed -n "/^Package: clang-${LLVM_MAJOR}\$/,/^\$/s/^Version: //p" "Packages" | head -n 1)"
+            echo "[Pskel] Fetched clang-${LLVM_MAJOR} ${APT_VERSION} for ${ARCH} (LLVM_VERSION=${LLVM_VERSION})." >&2
+            # apt.llvm.org publishes snapshot builds of the release branch, versioned like "1:23.1.1~++<date>..." while
+            # the branch heads towards 23.1.1, so a build that predates the release named by LLVM_VERSION is detectable.
+            if dpkg --compare-versions "${APT_VERSION#*:}" lt "${LLVM_VERSION}"; then
+              echo "::warning::apt.llvm.org does not provide LLVM ${LLVM_VERSION} for ${ARCH} yet (found ${APT_VERSION}). This older build stays cached until LLVM_VERSION changes or the llvm-debs cache entries are deleted."
+            fi
             ls -la
             du -sh .
             cd - >/dev/null
           done
           EOF
           docker run --rm -i \
-            -e LLVM_VERSION -e LLVM_PACKAGES -e LLVM_APT_CODENAME -e "LLVM_ARCHITECTURES=${LLVM_ARCHITECTURES}" \
+            -e LLVM_VERSION -e LLVM_MAJOR -e LLVM_PACKAGES -e LLVM_APT_CODENAME -e LLVM_OPTIONAL_ARCHITECTURES \
+            -e "LLVM_FETCH_ARCHITECTURES=${LLVM_FETCH_ARCHITECTURES}" \
             -v "${LLVM_APT_KEYRING}:/usr/share/keyrings/llvm-snapshot.gpg:ro" \
             "${DOCKER_ARGS[@]}" \
             "debian:${LLVM_APT_CODENAME}-slim" sh -eu -s < "${RUNNER_TEMP}/fetch-llvm-debs.sh"
+      - name: Resolve LLVM cache keys
+        id: llvm-keys
+        env:
+          CACHE_KEY_AMD64: ${{ steps.llvm.outputs.cache_key_amd64 }}
+          CACHE_KEY_ARM64: ${{ steps.llvm.outputs.cache_key_arm64 }}
+          CACHE_KEY_S390X: ${{ steps.llvm.outputs.cache_key_s390x }}
+        run: |
+          resolve() {
+            ARCH="$1"
+            CACHE_KEY="$2"
+            LLVM_DEBS_DIR="llvm-debs/${LLVM_APT_CODENAME}-${ARCH}"
+            if test -f "${LLVM_DEBS_DIR}/Packages"; then
+              echo "${ARCH}: ${CACHE_KEY}"
+              echo "cache_key_${ARCH}=${CACHE_KEY}" >> "${GITHUB_OUTPUT}"
+              return 0
+            fi
+            case " ${LLVM_OPTIONAL_ARCHITECTURES} " in
+              *" ${ARCH} "*)
+                # Leave no directory behind, so that actions/cache does not store an empty entry under this key.
+                rm -rf "${LLVM_DEBS_DIR}"
+                echo "${ARCH}: no pre-fetched packages available (optional architecture)."
+                echo "cache_key_${ARCH}=" >> "${GITHUB_OUTPUT}"
+                ;;
+              *)
+                echo "Error: LLVM apt packages for ${ARCH} are missing." >&2
+                exit 1
+                ;;
+            esac
+          }
+          resolve amd64 "${CACHE_KEY_AMD64}"
+          resolve arm64 "${CACHE_KEY_ARM64}"
+          resolve s390x "${CACHE_KEY_S390X}"
       - name: Record artifact metadata
         id: metadata
         run: |

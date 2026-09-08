@@ -41,6 +41,7 @@ jobs:
       artifact_name: ${{ needs.Prepare.outputs.artifact_name }}
       artifact_run_id: ${{ needs.Prepare.outputs.artifact_run_id }}
       archive_name: ${{ needs.Prepare.outputs.archive_name }}
+      llvm_cache_key_s390x: ${{ needs.Prepare.outputs.llvm_cache_key_s390x }}
   macOS:
     needs: Prepare
     uses: ./.github/workflows/ci_macos.yaml
@@ -62,3 +63,5 @@ jobs:
       artifact_name: ${{ needs.Prepare.outputs.artifact_name }}
       artifact_run_id: ${{ needs.Prepare.outputs.artifact_run_id }}
       archive_name: ${{ needs.Prepare.outputs.archive_name }}
+      llvm_cache_key_amd64: ${{ needs.Prepare.outputs.llvm_cache_key_amd64 }}
+      llvm_cache_key_arm64: ${{ needs.Prepare.outputs.llvm_cache_key_arm64 }}
