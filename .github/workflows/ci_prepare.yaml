@@ -120,7 +120,7 @@ jobs:
           DOCKER_ARGS=()
           for ARCH in ${LLVM_ARCHITECTURES}; do
             LLVM_DEBS_DIR="llvm-debs/${LLVM_APT_CODENAME}-${ARCH}"
-            if test -f "${LLVM_DEBS_DIR}/Packages"; then
+            if test -f "${LLVM_DEBS_DIR}/Packages" && test -f "${LLVM_DEBS_DIR}/Release"; then
               echo "LLVM apt packages for ${ARCH} restored from cache."
               continue
             fi
@@ -200,7 +200,7 @@ jobs:
             ARCH="$1"
             CACHE_KEY="$2"
             LLVM_DEBS_DIR="llvm-debs/${LLVM_APT_CODENAME}-${ARCH}"
-            if test -f "${LLVM_DEBS_DIR}/Packages"; then
+            if test -f "${LLVM_DEBS_DIR}/Packages" && test -f "${LLVM_DEBS_DIR}/Release"; then
               echo "${ARCH}: ${CACHE_KEY}"
               echo "cache_key_${ARCH}=${CACHE_KEY}" >> "${GITHUB_OUTPUT}"
               return 0

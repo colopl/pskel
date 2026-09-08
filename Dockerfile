@@ -42,7 +42,7 @@ RUN --mount=type=bind,source=.,target=/build_context \
       else \
         curl -fsSL "https://apt.llvm.org/llvm-snapshot.gpg.key" | gpg --dearmor --yes -o "${LLVM_APT_KEYRING}"; \
       fi && \
-      if test -f "${LLVM_DEBS_DIR}/Packages"; then \
+      if test -f "${LLVM_DEBS_DIR}/Packages" && test -f "${LLVM_DEBS_DIR}/Release"; then \
         echo "[Pskel] Installing LLVM ${LLVM_MAJOR} (release ${LLVM_VERSION}) from pre-fetched apt packages in ${LLVM_DEBS_DIR}." >&2 && \
         echo "deb [trusted=yes] file:${LLVM_DEBS_DIR} ./" > "/etc/apt/sources.list.d/llvm.list"; \
       else \
