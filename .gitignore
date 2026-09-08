@@ -1,5 +1,6 @@
 /ext/*.dep
 /ext/*~
 /valgrind-*.tar.bz2
+/llvm-debs
 *.DS_Store
 lcov.info

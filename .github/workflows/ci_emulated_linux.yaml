@@ -11,6 +11,11 @@ on:
       archive_name:
         required: true
         type: string
+      llvm_cache_key_s390x:
+        description: actions/cache key of the pre-fetched LLVM apt packages for s390x (from ci_prepare.yaml); empty when unavailable
+        required: false
+        default: ''
+        type: string
 jobs:
   Linux:
     runs-on: ubuntu-24.04
@@ -74,6 +79,13 @@ jobs:
             echo "exists=false" >> "${GITHUB_OUTPUT}"
             echo "Image does not exist, will build: ${{ steps.image-tag.outputs.tag }}"
           fi
+      - name: Restore LLVM apt packages from cache
+        if: steps.check-image.outputs.exists == 'false' && matrix.distro != 'alpine' && steps.cut-arch.outputs.arch == 's390x' && inputs.llvm_cache_key_s390x != ''
+        uses: actions/cache/restore@v6
+        with:
+          path: llvm-debs/${{ matrix.distro }}-${{ steps.cut-arch.outputs.arch }}
+          key: ${{ inputs.llvm_cache_key_s390x }}
+          fail-on-cache-miss: true
       - name: Build container
         if: steps.check-image.outputs.exists == 'false'
         run: |
