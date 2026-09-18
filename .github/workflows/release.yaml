@@ -7,7 +7,7 @@ permissions:
   contents: write
 jobs:
   Source:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     env:
       PSKEL_BUILD_TARGET: builder
     outputs:
@@ -176,7 +176,7 @@ jobs:
     needs:
       - Source
       - Windows
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     steps:
       - name: Upload Windows binaries to the release
         uses: php/php-windows-builder/release@29352c0ef9e8ce65264ea9e287881a6f7758a953 # 1.9.0
