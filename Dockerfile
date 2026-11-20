@@ -1,6 +1,6 @@
 ARG PLATFORM=${BUILDPLATFORM:-linux/amd64}
 ARG IMAGE=php
-ARG TAG=8.5-cli-trixie
+ARG TAG=8.6-cli-trixie
 ARG SKIP_VALGRIND=0
 # renovate: datasource=github-releases depName=llvm/llvm-project
 ARG LLVM_VERSION=23
